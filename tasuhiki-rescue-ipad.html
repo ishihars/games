@@ -69,7 +69,7 @@
       <svg id="scene" viewBox="0 0 640 330" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="252" width="640" height="78" fill="#97C459"/>
         <ellipse cx="320" cy="256" rx="120" ry="10" fill="#639922" opacity="0.5"/>
-        <g>
+        <g id="throwRabbit" transform="translate(0 0)">
           <ellipse cx="104" cy="168" rx="6" ry="19" transform="rotate(-16 104 168)" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="2"/>
           <ellipse cx="104" cy="168" rx="2.6" ry="12" transform="rotate(-16 104 168)" fill="#ED93B1"/>
           <ellipse cx="127" cy="166" rx="6" ry="20" transform="rotate(14 127 166)" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="2"/>
@@ -80,12 +80,12 @@
           <ellipse cx="114" cy="205" rx="3.5" ry="2.5" fill="#ED93B1"/>
           <ellipse cx="96" cy="256" rx="12" ry="8" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="1.5"/>
           <ellipse cx="130" cy="256" rx="12" ry="8" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="1.5"/>
-          <circle cx="140" cy="234" r="10" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="1.5"/>
+          <g id="throwArm" transform="rotate(-10 140 234)">
+            <circle cx="140" cy="234" r="10" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="1.5"/>
+            <path id="throwHandMochi" d="M145 220 C147 215 153 213 159 214 C164 211 171 213 173 217 C175 222 172 227 166 228 C161 231 153 230 149 227 C145 226 143 223 145 220 Z" fill="#F7F3EA" stroke="#D3D1C7" stroke-width="1.5"/>
+          </g>
         </g>
         <image id="mochiRabbit" href="" x="0" y="0" width="0" height="0"/>
-        <path d="M270 205 L370 205 L358 252 L282 252 Z" fill="#712B13" stroke="#4A1B0C" stroke-width="3"/>
-        <ellipse cx="320" cy="205" rx="50" ry="13" fill="#4A1B0C"/>
-        <ellipse id="mochi" cx="320" cy="204" rx="36" ry="9" fill="#F7F3EA" stroke="#D3D1C7" stroke-width="2"/>
         <text id="judge" x="320" y="120" text-anchor="middle" font-size="30" font-weight="600" fill="#1D9E75" opacity="0">ぴったり!</text>
         <g id="balls"></g>
       </svg>
@@ -115,7 +115,10 @@ window.MochiGame = (function(){
   const board=document.getElementById('board');
   const overlay=document.getElementById('overlay');
   const mochiRabbit=document.getElementById('mochiRabbit');
-  const MOCHI_ANCHOR_X=500, MOCHI_ANCHOR_Y=270, MOCHI_H=200;
+  const throwRabbit=document.getElementById('throwRabbit');
+  const throwArm=document.getElementById('throwArm');
+  const throwHandMochi=document.getElementById('throwHandMochi');
+  const MOCHI_ANCHOR_X=320, MOCHI_ANCHOR_Y=280, MOCHI_H=220;
   function setMochiFrame(n){
     const f = MOCHI_FRAMES[n];
     const w = MOCHI_H*f.aspect;
@@ -125,7 +128,25 @@ window.MochiGame = (function(){
     mochiRabbit.setAttribute('x', MOCHI_ANCHOR_X - w/2);
     mochiRabbit.setAttribute('y', MOCHI_ANCHOR_Y - MOCHI_H);
   }
-  const mochi=document.getElementById('mochi');
+  let throwTimers=[];
+  function resetThrowRabbit(){
+    if(throwRabbit)throwRabbit.setAttribute('transform','translate(0 0)');
+    if(throwArm)throwArm.setAttribute('transform','rotate(-10 140 234)');
+    if(throwHandMochi)throwHandMochi.setAttribute('opacity','1');
+  }
+  function throwAction(){
+    if(!throwArm)return;
+    throwTimers.forEach(clearTimeout); throwTimers=[];
+    if(throwRabbit)throwRabbit.setAttribute('transform','translate(-2 0)');
+    throwArm.setAttribute('transform','rotate(-28 140 234)');
+    if(throwHandMochi)throwHandMochi.setAttribute('opacity','1');
+    throwTimers.push(setTimeout(()=>{
+      if(throwRabbit)throwRabbit.setAttribute('transform','translate(4 -2)');
+      throwArm.setAttribute('transform','rotate(24 140 234)');
+      if(throwHandMochi)throwHandMochi.setAttribute('opacity','0');
+    },70));
+    throwTimers.push(setTimeout(()=>{ resetThrowRabbit(); },220));
+  }
   const judgeT=document.getElementById('judge');
   const scoreV=document.getElementById('scoreV');
   const comboV=document.getElementById('comboV');
@@ -172,18 +193,20 @@ window.MochiGame = (function(){
 
   const beatTime=(b)=>startT+b*BEAT;
   function makeBall(){
-    const c=document.createElementNS(NS,'circle');
-    c.setAttribute('r','13'); c.setAttribute('fill','#FFFFFF');
-    c.setAttribute('stroke','#B4B2A9'); c.setAttribute('stroke-width','2');
-    c.setAttribute('cx','-50'); c.setAttribute('cy','-50');
-    svg.appendChild(c); return c;
+    const p=document.createElementNS(NS,'path');
+    p.setAttribute('d','M -15 0 C -14 -7 -6 -11 2 -10 C 8 -13 16 -10 17 -4 C 19 3 14 9 7 9 C 2 12 -8 10 -12 6 C -16 4 -17 1 -15 0 Z');
+    p.setAttribute('fill','#FFFFFF');
+    p.setAttribute('stroke','#B4B2A9');
+    p.setAttribute('stroke-width','2');
+    p.setAttribute('transform','translate(-50 -50)');
+    svg.appendChild(p); return p;
   }
   function setup(){
     document.getElementById('balls').innerHTML='';
     notes=NOTE_BEATS.map(b=>({beat:b,el:makeBall(),tossed:false,tossSnd:false,judged:false}));
     score=0;combo=0;maxCombo=0;nextTick=0;
     scoreV.textContent='0'; comboV.textContent='0'; leftV.textContent=String(notes.length);
-    mochi.setAttribute('ry','9'); mochi.setAttribute('rx','36');
+    resetThrowRabbit();
   }
   function start(idx){
     if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();
@@ -218,9 +241,11 @@ window.MochiGame = (function(){
     setTimeout(()=>setMochiFrame(1), 130);
   }
   function grow(){
-    const ry=Math.min(20,parseFloat(mochi.getAttribute('ry'))+0.5);
-    mochi.setAttribute('ry',String(ry));
-    mochi.setAttribute('rx',String(Math.min(44,36+(ry-9))));
+    board.animate([
+      { transform:'scale(1)' },
+      { transform:'scale(1.015)' },
+      { transform:'scale(1)' }
+    ],{ duration:180, easing:'ease-out' });
   }
   function updateHud(){
     scoreV.textContent=String(score); comboV.textContent=String(combo);
@@ -247,12 +272,16 @@ window.MochiGame = (function(){
     while(nextTick<END_BEAT&&beatTime(nextTick)<now+0.2){sTick(beatTime(nextTick),nextTick%4===0);nextTick++;}
     notes.forEach(n=>{
       if(!n.tossSnd&&n.toss<now+0.2){n.tossSnd=true;sToss(n.toss);}
-      if(!n.tossed&&now>=n.toss)n.tossed=true;
+      if(!n.tossed&&now>=n.toss){n.tossed=true;throwAction();}
       if(n.tossed&&!n.judged){
         const p=Math.min(1.15,(now-n.toss)/BEAT);
-        const x=140+180*p;
-        const y=170+34*p-135*Math.sin(Math.PI*Math.min(1,p));
-        n.el.setAttribute('cx',String(x)); n.el.setAttribute('cy',String(y));
+        const arc=Math.min(1,p);
+        const x=150+170*p;
+        const y=172+30*p-128*Math.sin(Math.PI*arc);
+        const tilt=-18+36*arc;
+        const sx=1.04+0.08*Math.sin(Math.PI*arc);
+        const sy=0.92-0.08*Math.sin(Math.PI*arc);
+        n.el.setAttribute('transform',`translate(${x} ${y}) rotate(${tilt}) scale(${sx} ${sy})`);
         if(now>n.land+0.18)judgeNote(n,'m');
       }
     });
@@ -273,6 +302,7 @@ window.MochiGame = (function(){
   }
   function close(){
     playing=false; cancelAnimationFrame(raf);
+    resetThrowRabbit();
     modal.style.display='none';
     const cb=_onDone; _onDone=null;
     if(cb) cb();
@@ -832,9 +862,9 @@ function drawTitle(){
     }
   }
   // ボタン(たしざん3段階 + ひきざん、2×2)
-  drawBigButton(titleBtns.add1, "#ff8fab", "10", "より ちいさい", "8 + 5");
-  drawBigButton(titleBtns.add2, "#ffa94d", "10〜20", "より ちいさい", "14 + 6");
-  drawBigButton(titleBtns.add3, "#ff6b6b", "20〜30", "より ちいさい", "24 + 7");
+  drawBigButton(titleBtns.add1, "#ff8fab", "レベル 1", "10 より ちいさい", "8 + 5");
+  drawBigButton(titleBtns.add2, "#ffa94d", "レベル 2", "10〜20", "14 + 6");
+  drawBigButton(titleBtns.add3, "#ff6b6b", "レベル 3", "20〜30", "24 + 7");
   drawBigButton(titleBtns.sub,  "#9ad0ec", "ひきざん", "", "13 − 6");
   ctx.font="700 20px sans-serif"; ctx.fillStyle="#2b2b45";
   ctx.fillText("えらんで タップ してね！", W/2, 568);
