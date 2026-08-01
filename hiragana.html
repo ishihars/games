@@ -170,6 +170,10 @@ body{
 #strokeSvg .ink{fill:none;stroke:#E4584F;stroke-width:78;stroke-linecap:round;stroke-linejoin:round;}
 #strokeSvg .nib{fill:#fff;stroke:#B33A2E;stroke-width:9;opacity:0;}
 #hatchBtns{display:flex;align-items:center;justify-content:center;gap:min(5vw,26px);margin-top:min(2vh,12px);}
+/* 手本を見てなぞる前に飛ばしてしまわないよう、つぎへは後から出す */
+#nextBtn{opacity:0;visibility:hidden;pointer-events:none;
+  transform:scale(.6);transition:opacity .4s, transform .4s cubic-bezier(.2,1.6,.5,1);}
+#nextBtn.ready{opacity:1;visibility:visible;pointer-events:auto;transform:scale(1);}
 #hatchRow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:min(4vw,26px);}
 
 /* ---------- ずかん ---------- */
@@ -1319,8 +1323,9 @@ function goHatch(target){
   el.hatchStage.innerHTML = eggHalf("top") + eggHalf("bot") +
     `<div class="baby">${artHTML(target.word)}</div>`;
   el.traceChar.innerHTML = `<span class="tc-first">${target.kana}</span>`;
+  $("#nextBtn").classList.remove("ready");   // 手本→なぞりが済むまで出さない
   clearTrace();
-  updateParentBar(`<b>おうちの方へ</b>　<span class="tag">${target.wk}</span> が うまれました。「${target.kana}」を一画ずつ書く手本を見せ、消えたあとに指で自由になぞれます（正誤判定なし・🔁で手本をくり返し）。`);
+  updateParentBar(`<b>おうちの方へ</b>　<span class="tag">${target.wk}</span> が うまれました。「${target.kana}」を一画ずつ書く手本を見せます。手本のあと、なぞる時間をとってから ▶ が出ます（🔁で手本くり返し・🧽で消す／正誤判定なし）。`);
 
   SFX.crack();
   setTimeout(SFX.crack, 220);
@@ -1353,6 +1358,10 @@ async function playStrokeDemo(){
   if(!strokes){                       // データが無い字は文字ガイドのみ
     svg.classList.remove("on");
     el.traceChar.style.opacity = "1";
+    setTimeout(() => {
+      if(myToken !== _demoToken) return;
+      $("#nextBtn").classList.add("ready");
+    }, 4000);
     return;
   }
   el.traceChar.style.opacity = "0";   // デモ中は文字ガイドを隠す
@@ -1393,6 +1402,7 @@ async function playStrokeDemo(){
 
   const SPEED = 620;      // 1画あたりの基準速度(px/秒相当)
   const MIN_MS = 420, MAX_MS = 1100, GAP_MS = 300, HOLD_MS = 900, FADE_MS = 400;
+  const TRACE_TIME_MS = 4000;   // 手本のあと、なぞって遊ぶ時間
 
   function drawStroke(p, len){
     const dur = Math.min(MAX_MS, Math.max(MIN_MS, len / SPEED * 1000));
@@ -1429,6 +1439,15 @@ async function playStrokeDemo(){
   if(myToken !== _demoToken) return;
   svg.innerHTML = "";
   el.traceChar.style.opacity = "1";
+
+  // なぞって遊ぶ時間を確保してから「つぎへ」を出す
+  await wait(TRACE_TIME_MS);
+  if(myToken !== _demoToken) return;
+  const nb = $("#nextBtn");
+  if(!nb.classList.contains("ready")){
+    nb.classList.add("ready");
+    AudioSys.tone({freq: 880, dur: .16, volume: .14});
+  }
 }
 function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
 
