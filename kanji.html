@@ -211,7 +211,14 @@ ruby rt{font-size:.4em;}
 .z-cell.seed .flower::before{content:"";display:none;}
 .z-cell.seed .zk{color:var(--ink);font-size:50px;}
 .z-cell .zy{font-size:20px;margin-top:4px;}
-.z-cell .stage-badge{position:absolute;right:5px;top:3px;font-size:25px;z-index:4;filter:drop-shadow(0 2px 1px rgba(0,0,0,.08));}
+.z-cell .stage-badge{position:absolute;right:5px;top:3px;z-index:4;line-height:1;transform-origin:center;filter:drop-shadow(0 2px 1px rgba(0,0,0,.10));transition:font-size .25s ease,transform .25s ease;}
+.z-cell .stage-badge.level-0{font-size:21px;}
+.z-cell .stage-badge.level-1{font-size:27px;}
+.z-cell .stage-badge.level-2{font-size:34px;}
+.z-cell .stage-badge.level-3{font-size:42px;}
+.z-cell .stage-badge.level-4{font-size:50px;top:0;right:2px;}
+.z-cell.newly .stage-badge{animation:growBadge .9s cubic-bezier(.2,.9,.25,1.25);}
+@keyframes growBadge{0%{transform:scale(.45) rotate(-12deg);}55%{transform:scale(1.35) rotate(8deg);}100%{transform:scale(1) rotate(0);}}
 .z-cell .zstats{font-size:15px;font-weight:bold;margin-top:3px;white-space:nowrap;opacity:.82;}
 .z-cell .master-badge{position:absolute;left:4px;top:3px;font-size:23px;z-index:4;}
 .z-cell.sprout{border-color:#A8D7A9;}
@@ -236,6 +243,15 @@ ruby rt{font-size:.4em;}
   *{animation-duration:.01s !important;transition-duration:.01s !important;}
 }
 
+/* 各学習画面からトップメニューへ */
+.menu-mini{height:58px;min-width:132px;padding:8px 14px;border-radius:18px;background:var(--paper);border:3px solid var(--line);
+  box-shadow:0 4px 0 var(--line);font-size:21px;font-weight:bold;white-space:nowrap;}
+.menu-mini:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line);}
+.menu-float{position:absolute;top:18px;left:22px;z-index:12;}
+.panel{position:relative;}
+.overlay-menu-btn{align-self:flex-start;flex:0 0 auto;height:52px;min-width:118px;padding:7px 12px;border-radius:16px;
+  background:#fff;border:3px solid var(--line);box-shadow:0 4px 0 var(--line);font-size:19px;font-weight:bold;}
+.overlay-menu-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line);}
 @media (max-width:980px){
   #zukan-panel{width:900px;max-width:calc(100% - 84px);}
   #zukan-grid{grid-template-columns:repeat(5,minmax(0,140px));column-gap:16px;}
@@ -276,7 +292,7 @@ ruby rt{font-size:.4em;}
 
   <!-- お手本デモ -->
   <section class="screen" id="scr-demo">
-    <div class="topbar"><span class="stepname">おてほん</span><span></span>
+    <div class="topbar"><button class="menu-mini js-menu-return" type="button">🏠 メニュー</button><span class="stepname">おてほん</span><span></span>
       <button class="icon-btn" id="demo-sound" aria-label="もういちど きく">🔊</button></div>
     <div class="qarea" id="demo-area"></div>
   </section>
@@ -284,6 +300,7 @@ ruby rt{font-size:.4em;}
   <!-- クイズ(よみ・えらび) -->
   <section class="screen" id="scr-quiz">
     <div class="topbar">
+      <button class="menu-mini js-menu-return" type="button">🏠 メニュー</button>
       <span class="stepname" id="q-step">よみ</span>
       <div class="dots" id="q-dots"></div>
       <button class="icon-btn" id="q-sound" aria-label="もういちど きく">🔊</button>
@@ -297,6 +314,7 @@ ruby rt{font-size:.4em;}
   <!-- なぞり -->
   <section class="screen" id="scr-trace">
     <div class="topbar">
+      <button class="menu-mini js-menu-return" type="button">🏠 メニュー</button>
       <span class="stepname">なぞり</span>
       <div class="dots" id="t-dots"></div>
       <button class="icon-btn" id="t-sound" aria-label="もういちど きく">🔊</button>
@@ -314,6 +332,7 @@ ruby rt{font-size:.4em;}
 
   <!-- けっか -->
   <section class="screen" id="scr-result">
+    <button class="menu-mini menu-float js-menu-return" type="button">🏠 メニュー</button>
     <svg id="result-stamp" viewBox="0 0 200 200"></svg>
     <div id="result-msg">よくできました!</div>
     <div style="display:flex;gap:26px;">
@@ -337,6 +356,7 @@ ruby rt{font-size:.4em;}
 
   <!-- くらべる(ヒント2) -->
   <div class="overlay" id="ovl-compare"><div class="card panel">
+    <button class="overlay-menu-btn js-menu-return" type="button">🏠 メニュー</button>
     <h3>どこが ちがうかな?</h3>
     <div class="compare" id="cmp-body"></div>
     <button class="btn" id="cmp-ok">もういちど やってみる</button>
@@ -344,6 +364,7 @@ ruby rt{font-size:.4em;}
 
   <!-- いっしょにかくにん(解説) -->
   <div class="overlay" id="ovl-walk"><div class="card panel">
+    <button class="overlay-menu-btn js-menu-return" type="button">🏠 メニュー</button>
     <h3 id="walk-title">いっしょに かくにんしよう</h3>
     <div class="naritachi" id="walk-naritachi"></div>
     <div id="walk-text" style="font-size:32px;font-weight:bold;"></div>
@@ -353,11 +374,11 @@ ruby rt{font-size:.4em;}
   <!-- ずかん -->
   <div class="overlay" id="ovl-zukan"><div class="card panel" id="zukan-panel">
     <div id="zukan-head">
-      <button class="icon-btn" id="zukan-back" aria-label="メニューにもどる">↩</button>
+      <button class="icon-btn" id="zukan-back" aria-label="トップメニューへ">🏠</button>
       <h3>かんじの はな ずかん</h3>
       <span aria-hidden="true"></span>
     </div>
-    <div id="zukan-help">2かい せいかいで「しゅうとく」!　なぞりは100てんを めざそう!</div>
+    <div id="zukan-help">3かい せいかいで「しゅうとく」!　アイコンが そだつよ!　なぞりは100てんを めざそう!</div>
     <div id="zukan-scroll"><div id="zukan-grid"></div></div>
     <div id="zukan-actions">
       <button class="btn" id="zukan-test">🎯 テスト</button>
@@ -368,6 +389,7 @@ ruby rt{font-size:.4em;}
 
   <!-- ずかんテスト結果 -->
   <div class="overlay" id="ovl-test-result"><div class="card panel" style="max-width:720px;">
+    <button class="overlay-menu-btn js-menu-return" type="button">🏠 メニュー</button>
     <div style="font-size:72px;">🎯</div>
     <h3>ずかんテスト</h3>
     <div id="test-result-msg" style="font-size:38px;font-weight:bold;text-align:center;"></div>
@@ -376,6 +398,7 @@ ruby rt{font-size:.4em;}
 
   <!-- おうちのひとへ -->
   <div class="overlay" id="ovl-parent"><div class="card panel" style="max-width:920px;">
+    <button class="overlay-menu-btn js-menu-return" type="button">🏠 メニュー</button>
     <h3 style="font-family:var(--maru);">おうちの方へ(きょうの記録)</h3>
     <div id="parent-body"></div>
     <div id="parent-actions">
@@ -386,6 +409,7 @@ ruby rt{font-size:.4em;}
 
   <!-- きゅうけい -->
   <div class="overlay" id="ovl-break"><div class="card panel">
+    <button class="overlay-menu-btn js-menu-return" type="button">🏠 メニュー</button>
     <div style="font-size:80px;">🍵</div>
     <h3>きゅうけいしよう!</h3>
     <div style="font-size:28px;">2かい がんばったね。すこし めを やすめよう。</div>
@@ -642,9 +666,130 @@ naka:`<rect x="28" y="26" width="44" height="38" rx="8" fill="none" stroke="#8A6
 <polygon points="54,13 73,19 54,25" fill="#F0803C"/>
 <circle cx="50" cy="45" r="6" fill="#F5A623"/>`,
 };
-const PICT_EMOJI={"六":"6️⃣","早":"🌅","足":"🦶","村":"🏘️","男":"👦","虫":"🐛","草":"🌿","生":"🌱","青":"🟦","赤":"🟥","夕":"🌇","千":"1000","先":"👉","町":"🏘️","天":"☀️","名":"🏷️","文":"📝","右":"➡️","力":"💪","立":"🧍","林":"🌲🌲","本":"📘","百":"💯","土":"🟫","二":"2️⃣","入":"🚪","年":"📅","白":"⬜","八":"8️⃣","一":"1️⃣","玉":"🔵","空":"☁️","気":"💨","見":"👀","犬":"🐕","五":"5️⃣","九":"9️⃣","休":"🛌","音":"🎵","雨":"🌧️","円":"🪙","王":"👑","花":"🌸","貝":"🐚","学":"🎓","校":"🏫","十":"🔟","出":"🚪","女":"👧","正":"✅","森":"🌳","車":"🚗","七":"7️⃣","金":"🥇","左":"⬅️","三":"3️⃣","四":"4️⃣","子":"👶","糸":"🧵","字":"✏️"};
+const PICT_EMOJI={"六":"6️⃣","早":"🌅","足":"🦶","村":"🌳","男":"👦","虫":"🐛","草":"🌿","生":"🌱","青":"🟦","赤":"🟥","夕":"🌇","千":"1000","先":"👉","町":"🏘️","天":"☀️","名":"🏷️","文":"📝","右":"➡️","力":"💪","立":"🧍","林":"🌲🌲","本":"📘","百":"💯","土":"🟫","二":"2️⃣","入":"🚪","年":"📅","白":"⬜","八":"8️⃣","一":"1️⃣","玉":"🔵","空":"☁️","気":"💨","見":"👀","犬":"🐕","五":"5️⃣","九":"9️⃣","休":"🛌","音":"🎵","雨":"🌧️","円":"🪙","王":"👑","花":"🌸","貝":"🐚","学":"🎓","校":"🏫","十":"🔟","出":"🚪","女":"👧","正":"✅","森":"🌳","車":"🚗","七":"7️⃣","金":"🥇","左":"⬅️","三":"3️⃣","四":"4️⃣","子":"👶","糸":"🧵","字":"✏️"};
+/* レベル7以降の「もとになる絵」: 意味よりも、漢字の見た目に近い「形ヒント」を優先 */
+const PICT_SCENE={
+  /* 数字: 実物を数えながら、全体の並びが漢字の見た目にも少し近くなるよう配置 */
+  "一":{icons:["🪵"],positions:[[50,52]],fontSize:54},
+  "二":{icons:["🪵","🪵"],positions:[[50,34],[50,72]],fontSize:48},
+  "三":{icons:["🪵","🪵","🪵"],positions:[[50,20],[50,50],[50,80]],fontSize:40},
+  "四":{icons:["🪟","🕳️"],positions:[[50,50],[50,50]],fontSize:48},
+  "五":{icons:["🟧","🟧","🟧","🟧","🟧"],positions:[[24,22],[76,22],[50,48],[30,78],[70,78]],fontSize:20},
+  "六":{icons:["🍬","🍬","🍬","🍬","🍬","🍬"],positions:[[32,24],[50,24],[68,24],[32,70],[50,70],[68,70]],fontSize:20},
+  "七":{icons:["🍬","🍬","🍬","🍬","🍬","🍬","🍬"],positions:[[20,24],[40,24],[60,24],[80,24],[36,70],[54,70],[72,70]],fontSize:18},
+  "八":{icons:["🍂","🍂"],positions:[[36,58],[64,58]],fontSize:46},
+  "九":{icons:["🍊","🍊","🍊","🍊","🍊","🍊","🍊","🍊","🍊"],positions:[[22,20],[42,20],[62,20],[82,20],[30,48],[50,48],[70,48],[42,76],[62,76]],fontSize:16},
+  "十":{icons:["🔟"],positions:[[50,52]],fontSize:44},
+  "百":{icons:["🏠","💯"],positions:[[50,26],[50,74]],fontSize:30},
+  "千":{icons:["🌾","1000"],positions:[[50,28],[50,74]],fontSize:24},
+
+  /* 色・天気・自然: 意味が分かりつつ、配置やシルエットが字形に近づくよう調整 */
+  "赤":{icons:["🍎","🍎","🍎"],positions:[[50,16],[50,46],[50,78]],fontSize:28},
+  "青":{icons:["🟦","🌊","🟦"],positions:[[50,16],[50,46],[50,78]],fontSize:24},
+  "白":{icons:["💧","⬜"],positions:[[50,16],[50,60]],fontSize:30},
+  "玉":{icons:["🔵","💎"],positions:[[50,58],[68,18]],fontSize:28},
+  "空":{icons:["☁️","🕊️"],positions:[[50,28],[50,70]],fontSize:30},
+  "雨":{icons:["☁️","💧","💧","💧","💧"],positions:[[50,20],[34,56],[66,56],[34,78],[66,78]],fontSize:24},
+  "天":{icons:["☀️","🧍"],positions:[[50,18],[50,66]],fontSize:30},
+  "気":{icons:["☁️","💨","💨"],positions:[[44,18],[50,48],[50,78]],fontSize:26},
+
+  "花":{icons:["🌿","🌸"],positions:[[50,22],[50,68]],fontSize:32},
+  "草":{icons:["🌿","🌿","🌱"],positions:[[34,20],[66,20],[50,70]],fontSize:28},
+  "林":{icons:["🌲","🌲"],positions:[[34,56],[66,56]],fontSize:34},
+  "森":{icons:["🌲","🌲","🌲"],positions:[[50,24],[30,72],[70,72]],fontSize:30},
+
+  "犬":{icons:["🐕","💧"],positions:[[50,60],[76,18]],fontSize:30},
+  "虫":{icons:["🐛"],positions:[[50,56]],fontSize:36},
+  "貝":{icons:["🐚","✨"],positions:[[50,56],[50,18]],fontSize:32},
+  "糸":{icons:["🧵","🧵","🪢"],positions:[[34,22],[66,22],[50,70]],fontSize:26},
+
+  "男":{icons:["🌾","👦"],positions:[[50,24],[50,72]],fontSize:30},
+  "女":{icons:["👧"],positions:[[50,56]],fontSize:36},
+  "子":{icons:["👶"],positions:[[50,56]],fontSize:36},
+  "王":{icons:["👑","⭐","⭐"],positions:[[50,18],[50,50],[50,82]],fontSize:26},
+
+  "村":{icons:["🏠","🌳"],positions:[[32,58],[68,58]],fontSize:28},
+  "町":{icons:["🌾","🛣️","🏠"],positions:[[26,56],[50,56],[74,56]],fontSize:24},
+  "学":{icons:["🏫","📖","🧒"],positions:[[50,18],[50,46],[50,78]],fontSize:24},
+  "校":{icons:["🌲","🏫"],positions:[[30,58],[70,58]],fontSize:30},
+
+  "早":{icons:["☀️","⏰"],positions:[[50,24],[50,72]],fontSize:30},
+  "夕":{icons:["🌙","🌇"],positions:[[44,28],[56,70]],fontSize:28},
+  "年":{icons:["📅","🌾"],positions:[[50,28],[50,74]],fontSize:28},
+  "休":{icons:["🧍","🌳"],positions:[[34,58],[66,58]],fontSize:30},
+
+  "入":{icons:["🚪","➡️"],positions:[[34,56],[66,56]],fontSize:28},
+  "出":{icons:["⛰️","⛰️"],positions:[[50,26],[50,74]],fontSize:32},
+  "見":{icons:["👀","🦵"],positions:[[50,24],[50,78]],fontSize:30},
+  "生":{icons:["🌱"],positions:[[50,56]],fontSize:36},
+
+  "本":{icons:["📘","📍"],positions:[[50,50],[50,82]],fontSize:30},
+  "文":{icons:["✍️","📄"],positions:[[40,58],[62,58]],fontSize:26},
+  "字":{icons:["🏠","あ"],positions:[[50,22],[50,72]],fontSize:32},
+  "名":{icons:["🏷️","👄"],positions:[[50,24],[50,74]],fontSize:28},
+
+  "力":{icons:["💪"],positions:[[50,56]],fontSize:36},
+  "正":{icons:["📏","✅"],positions:[[50,22],[50,74]],fontSize:30},
+  "円":{icons:["🪙","⭕"],positions:[[50,54],[50,54]],fontSize:34},
+  "金":{icons:["✨","🪙","🪙","🪙"],positions:[[50,16],[30,60],[50,60],[70,60]],fontSize:24},
+
+  "土":{icons:["🌱","🟫"],positions:[[50,24],[50,76]],fontSize:30},
+  "先":{icons:["👣","✨"],positions:[[50,28],[50,76]],fontSize:30},
+  "車":{icons:["🚗"],positions:[[50,56]],fontSize:40},
+  "音":{icons:["🔔","🎵"],positions:[[50,22],[50,74]],fontSize:32}
+};
+function sceneItems(scene){
+  if(scene.repeat) return Array.from({length:scene.count||1},()=>scene.repeat);
+  if(scene.items) return scene.items.slice();
+  return (scene.icons||[]).slice();
+}
+function scenePositions(n){
+  const presets={
+    1:[[50,52]],2:[[32,52],[68,52]],3:[[28,38],[72,38],[50,70]],4:[[30,36],[70,36],[30,70],[70,70]],
+    5:[[22,34],[50,34],[78,34],[35,70],[65,70]],6:[[22,34],[50,34],[78,34],[22,70],[50,70],[78,70]],
+    7:[[18,32],[39,32],[61,32],[82,32],[28,70],[50,70],[72,70]],8:[[18,32],[39,32],[61,32],[82,32],[18,70],[39,70],[61,70],[82,70]],
+    9:[[22,27],[50,27],[78,27],[22,52],[50,52],[78,52],[22,77],[50,77],[78,77]],
+    10:[[14,34],[32,34],[50,34],[68,34],[86,34],[14,70],[32,70],[50,70],[68,70],[86,70]]
+  };
+  return presets[Math.min(10,Math.max(1,n))]||presets[1];
+}
+
+const CUSTOM_SCENE_SVG={
+  "赤":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><circle cx="50" cy="18" r="7" fill="#E94A47"/><path d="M46 12 C44 8 48 7 50 10 C52 7 56 8 54 12" fill="#55A84F"/><rect x="32" y="32" width="36" height="24" rx="8" fill="#EE5B56"/><line x1="50" y1="26" x2="50" y2="78" stroke="#D8433E" stroke-width="5" stroke-linecap="round"/><line x1="34" y1="44" x2="66" y2="44" stroke="#F9B6B2" stroke-width="3" stroke-linecap="round" opacity="0.75"/><circle cx="39" cy="80" r="9" fill="#E94A47"/><circle cx="61" cy="80" r="9" fill="#E94A47"/><path d="M39 70 C42 62 47 60 50 58" stroke="#8D5A2B" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M61 70 C58 62 53 60 50 58" stroke="#8D5A2B" stroke-width="2.5" fill="none" stroke-linecap="round"/></g></svg>`,
+  "青":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><rect x="28" y="14" width="44" height="7" rx="3.5" fill="#4B90E2"/><rect x="32" y="25" width="36" height="7" rx="3.5" fill="#62A8F5"/><path d="M50 30 L50 62" stroke="#3D7ED9" stroke-width="6" stroke-linecap="round"/><path d="M50 38 C42 40 38 45 38 50 C44 50 48 47 50 42" fill="#74B8FF"/><path d="M50 42 C52 47 56 50 62 50 C62 45 58 40 50 38" fill="#74B8FF"/><rect x="31" y="58" width="38" height="24" rx="10" fill="#76B6FF" stroke="#3D7ED9" stroke-width="3"/><line x1="40" y1="66" x2="60" y2="66" stroke="#D9EEFF" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="74" x2="60" y2="74" stroke="#D9EEFF" stroke-width="3" stroke-linecap="round"/></g></svg>`,
+  "白":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><path d="M50 11 C45 18 43 21 43 25 C43 29 46 32 50 32 C54 32 57 29 57 25 C57 21 55 18 50 11 Z" fill="#FFFFFF" stroke="#C8D0D8" stroke-width="2"/><rect x="30" y="36" width="40" height="40" rx="10" fill="#FFFFFF" stroke="#C8D0D8" stroke-width="3"/><line x1="38" y1="49" x2="62" y2="49" stroke="#E7EDF2" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="60" x2="58" y2="60" stroke="#E7EDF2" stroke-width="3" stroke-linecap="round"/></g></svg>`,
+  "玉":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><circle cx="69" cy="18" r="4.5" fill="#35A8D8"/><rect x="29" y="21" width="42" height="7" rx="3.5" fill="#6FD4FF"/><rect x="29" y="44" width="42" height="7" rx="3.5" fill="#6FD4FF"/><rect x="29" y="67" width="42" height="7" rx="3.5" fill="#6FD4FF"/><path d="M50 19 L50 75" stroke="#35A8D8" stroke-width="5.5" stroke-linecap="round"/><circle cx="50" cy="47.5" r="8.5" fill="#97E7FF" stroke="#35A8D8" stroke-width="2.8"/><line x1="38" y1="47.5" x2="62" y2="47.5" stroke="#E6FFFF" stroke-width="2.4" stroke-linecap="round" opacity="0.95"/></g></svg>`,
+  "雨":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><path d="M18 19 H82 V31 H74 V29 H26 V31 H18 Z" fill="#889CAC"/><path d="M26 29 H74 V45 H26 Z" fill="#BCC9D5"/><line x1="50" y1="19" x2="50" y2="45" stroke="#8FA5B5" stroke-width="3" opacity="0.65"/><path d="M36 53 C34 58 34 60 36 62 C38 64 42 63 43 59 C44 56 42 53 36 53 Z" fill="#67B7FF"/><path d="M57 53 C55 58 55 60 57 62 C59 64 63 63 64 59 C65 56 63 53 57 53 Z" fill="#67B7FF"/><path d="M36 71 C34 76 34 78 36 80 C38 82 42 81 43 77 C44 74 42 71 36 71 Z" fill="#67B7FF"/><path d="M57 71 C55 76 55 78 57 80 C59 82 63 81 64 77 C65 74 63 71 57 71 Z" fill="#67B7FF"/></g></svg>`,
+  "天":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><rect x="26" y="16" width="48" height="8" rx="4" fill="#FDBB4C"/><circle cx="50" cy="38" r="6.5" fill="#F6A623"/><path d="M50 45 L50 61" stroke="#F6A623" stroke-width="5" stroke-linecap="round"/><path d="M33 52 L67 52" stroke="#F6A623" stroke-width="5" stroke-linecap="round"/><path d="M50 61 L34 80" stroke="#F6A623" stroke-width="5" stroke-linecap="round"/><path d="M50 61 L66 80" stroke="#F6A623" stroke-width="5" stroke-linecap="round"/></g></svg>`,
+  "王":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><rect x="46" y="17" width="8" height="66" rx="4" fill="#9A6A3A"/><path d="M24 20 H76 L68 33 H32 Z" fill="#6D7884"/><path d="M28 43 H72 L65 54 H35 Z" fill="#7C8792"/><path d="M20 70 H80 L72 83 H28 Z" fill="#59636D"/></g></svg>`,
+  "玉":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><line x1="50" y1="14" x2="50" y2="84" stroke="#A77A46" stroke-width="4" stroke-linecap="round"/><ellipse cx="50" cy="26" rx="24" ry="8" fill="#52C5A2" stroke="#258A73" stroke-width="2.5"/><ellipse cx="50" cy="50" rx="24" ry="8" fill="#62D3B0" stroke="#258A73" stroke-width="2.5"/><ellipse cx="50" cy="74" rx="24" ry="8" fill="#79DEBE" stroke="#258A73" stroke-width="2.5"/><circle cx="72" cy="63" r="5" fill="#40B694"/></g></svg>`,
+  "九":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><circle cx="35" cy="24" r="8" fill="#F1C7A5"/><path d="M41 29 C48 36 50 43 48 52 C45 63 36 72 24 80" stroke="#F1C7A5" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M45 48 C56 42 68 40 75 43 C80 46 80 55 77 65 C74 74 76 80 82 82" stroke="#E8B98E" stroke-width="11" fill="none" stroke-linecap="round"/></g></svg>`,
+  "貝":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><path d="M31 18 C62 13 75 28 70 55 C67 70 59 79 50 83 C38 78 29 66 27 52 C24 36 25 23 31 18 Z" fill="#C99668" stroke="#8B5E3C" stroke-width="3"/><path d="M38 27 C52 23 62 28 62 38" stroke="#E6C09F" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M36 43 H64 M35 54 H63 M37 65 H60" stroke="#E6C09F" stroke-width="3" stroke-linecap="round"/><path d="M42 82 L34 89 M58 82 L66 89" stroke="#8B5E3C" stroke-width="4" stroke-linecap="round"/></g></svg>`,
+  "林":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g stroke-linecap="round"><path d="M34 20 V82 M66 20 V82" stroke="#8A6D4B" stroke-width="6"/><path d="M34 30 L18 50 M34 30 L50 50 M34 42 L20 68 M34 42 L48 68" stroke="#58A65C" stroke-width="7"/><path d="M66 30 L50 50 M66 30 L82 50 M66 42 L52 68 M66 42 L80 68" stroke="#58A65C" stroke-width="7"/></g></svg>`,
+  "森":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g stroke-linecap="round"><path d="M50 12 V52 M28 48 V88 M72 48 V88" stroke="#8A6D4B" stroke-width="5"/><path d="M50 18 L36 34 M50 18 L64 34 M50 28 L38 46 M50 28 L62 46" stroke="#4E9E58" stroke-width="6"/><path d="M28 54 L16 69 M28 54 L40 69 M28 64 L18 80 M28 64 L38 80" stroke="#65B56C" stroke-width="6"/><path d="M72 54 L60 69 M72 54 L84 69 M72 64 L62 80 M72 64 L82 80" stroke="#65B56C" stroke-width="6"/></g></svg>`,
+  "女":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><circle cx="48" cy="23" r="8" fill="#E8B98E"/><path d="M45 31 C39 44 38 56 44 65 C50 73 61 77 76 81" stroke="#D97B8C" stroke-width="11" fill="none" stroke-linecap="round"/><path d="M60 40 C56 54 48 65 38 72 C31 77 24 80 18 81" stroke="#D97B8C" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M22 43 H78" stroke="#C95C72" stroke-width="7" stroke-linecap="round"/><path d="M36 43 C42 49 48 53 54 55 M55 43 C50 49 45 53 40 55" stroke="#F3C4CE" stroke-width="4" fill="none" stroke-linecap="round"/></g></svg>`,
+  "子":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><circle cx="50" cy="23" r="10" fill="#F1C7A5"/><path d="M50 34 C52 46 52 60 49 78" stroke="#7AA9D8" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M22 48 C38 43 62 43 78 48" stroke="#7AA9D8" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M38 81 C43 76 47 73 50 72 C53 73 58 76 63 81" stroke="#7AA9D8" stroke-width="7" fill="none" stroke-linecap="round"/></g></svg>`,
+  "力":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><path d="M32 25 C45 28 57 31 68 28 C73 27 77 31 75 38 C72 50 68 62 62 74 C59 80 54 82 48 77" stroke="#E7A97C" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M50 18 C48 31 44 44 38 56 C33 66 27 75 20 81" stroke="#F0BA91" stroke-width="11" fill="none" stroke-linecap="round"/><ellipse cx="67" cy="35" rx="10" ry="7" fill="#E7A97C"/></g></svg>`,
+  "車":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><line x1="50" y1="12" x2="50" y2="88" stroke="#8A6D4B" stroke-width="6" stroke-linecap="round"/><rect x="32" y="28" width="36" height="35" rx="5" fill="#C99755" stroke="#79562F" stroke-width="3"/><line x1="32" y1="45" x2="68" y2="45" stroke="#79562F" stroke-width="3"/><line x1="22" y1="70" x2="78" y2="70" stroke="#79562F" stroke-width="5" stroke-linecap="round"/><circle cx="22" cy="70" r="11" fill="none" stroke="#5C6670" stroke-width="5"/><circle cx="78" cy="70" r="11" fill="none" stroke="#5C6670" stroke-width="5"/></g></svg>`,
+  "足":(size)=>`<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/><g><rect x="36" y="18" width="30" height="26" rx="10" fill="#F0C09A"/><path d="M50 44 C49 56 46 65 40 73 C35 79 30 83 23 86" stroke="#E7B185" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M47 66 C57 71 66 76 80 83" stroke="#F0C09A" stroke-width="11" fill="none" stroke-linecap="round"/></g></svg>`
+};
+function specialSceneSVG(key,size){
+  const f=CUSTOM_SCENE_SVG[key];
+  return f?f(size):null;
+}
+
+function scenePictSVG(key,size){
+  const special=specialSceneSVG(key,size); if(special) return special;
+  const scene=PICT_SCENE[key]; if(!scene) return null;
+  const items=sceneItems(scene), pos=scene.positions||scenePositions(items.length);
+  const fs=scene.fontSize||(items.length>=9?22:items.length>=7?25:items.length>=5?30:items.length>=3?35:items.length===2?42:56);
+  const texts=items.map((it,i)=>`<text x="${pos[i][0]}" y="${pos[i][1]}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" font-family="Hiragino Maru Gothic ProN,Meiryo,Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif" fill="#3E3A39">${it}</text>`).join("");
+  return `<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F7FBFF" stroke="#D7E6F3" stroke-width="2"/><rect x="12" y="12" width="76" height="76" rx="16" fill="#FFFBEA"/>${texts}</svg>`;
+}
 function pictSVG(key,size){
+  const special=specialSceneSVG(key,size); if(special) return special;
   if(PICT[key]) return `<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true">${PICT[key]}</svg>`;
+  const scene=scenePictSVG(key,size); if(scene) return scene;
   const icon=PICT_EMOJI[key]||key;
   const fs=(icon.length>3?36:50);
   return `<svg viewBox="0 0 100 100" width="${size||290}" height="${size||290}" aria-hidden="true"><rect x="4" y="4" width="92" height="92" rx="20" fill="#F4F8F2"/><circle cx="50" cy="50" r="39" fill="#FFF9DD" stroke="#CFE2C3" stroke-width="3"/><text x="50" y="54" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif">${icon}</text></svg>`;
@@ -754,6 +899,18 @@ document.addEventListener("touchmove",e=>{ if(e.touches&&e.touches.length>1) e.p
 
 function show(id){ document.querySelectorAll(".screen").forEach(e=>e.classList.remove("on")); $(id).classList.add("on"); }
 function overlay(id,on){ $(id).classList.toggle("on",on!==false); }
+function clearMenuHash(){
+  if(location.hash==="#menu"){ try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){ location.hash=""; } }
+}
+function goTopMenu(){
+  try{ Voice.stop(); }catch(e){}
+  try{ saveState(); }catch(e){}
+  try{ location.hash="menu"; location.reload(); }catch(e){
+    document.querySelectorAll(".overlay").forEach(x=>x.classList.remove("on"));
+    try{ renderSets(); }catch(_){}
+    show("#scr-sets");
+  }
+}
 
 /* ================= 状態・端末保存 ================= */
 const SAVE_KEY="kanji-no-tane-progress-v3";
@@ -774,12 +931,12 @@ function statsOf(c){
   if(st.testCorrect==null) st.testCorrect=0;
   return st;
 }
-const LEARNED_CORRECT=2;
+const LEARNED_CORRECT=3;
 function isLearned(c){ return statsOf(c).correct>=LEARNED_CORRECT; }
 function growthLevel(correct){
   if(correct>=10) return 4; // きんのはな
-  if(correct>=5) return 3;  // はな
-  if(correct>=3) return 2;  // つぼみ
+  if(correct>=3) return 3;  // はな＝しゅうとく
+  if(correct>=2) return 2;  // つぼみ
   if(correct>=1) return 1;  // め
   return 0;                 // たね
 }
@@ -787,9 +944,9 @@ function growthInfo(c){
   const n=statsOf(c).correct, level=growthLevel(n);
   return [
     {level:0,name:"たね",icon:"🌰",next:1},
-    {level:1,name:"め",icon:"🌱",next:3},
-    {level:2,name:"つぼみ",icon:"🌷",next:5},
-    {level:3,name:"はな",icon:"🌼",next:10},
+    {level:1,name:"め",icon:"🌱",next:2},
+    {level:2,name:"つぼみ",icon:"🌷",next:3},
+    {level:3,name:"はな（しゅうとく）",icon:"🌼",next:10},
     {level:4,name:"きんのはな",icon:"👑",next:null}
   ][level];
 }
@@ -937,7 +1094,7 @@ document.getElementById("rotate-ok").addEventListener("click",function(){
 });
 $("#btn-start").addEventListener("click",()=>{ Snd.ensure(); Snd.tap(); if("speechSynthesis" in window){ try{speechSynthesis.resume();}catch(e){} }
   Voice.speak("かんじのたねへ ようこそ!"); renderSets(); show("#scr-sets"); });
-$("#btn-home").addEventListener("click",()=>{ Snd.tap(); show("#scr-title"); });
+$("#btn-home").addEventListener("click",()=>{ Snd.tap(); clearMenuHash(); show("#scr-title"); });
 
 function renderSets(){
   const g=$("#set-grid"); g.innerHTML="";
@@ -1377,10 +1534,10 @@ function renderZukan(){
     cell.setAttribute("aria-label",`${c}（${KANJI[c].yomi}）。せいかい${st.correct}かい。${learned?"しゅうとくずみ。":"れんしゅうちゅう。"}なぞり最高${st.bestTraceScore||0}てん。れんしゅうする`);
     const flower=(info.level>=3)?`<svg viewBox="0 0 100 100">${flowerSVG(info.level>=4?"#FFD95A":"#FBD489",info.level>=4?"#D6A514":"#F5A623",50,50,46)}</svg>`:"";
     const master=(st.beautifulTraceCount||0)>=3?'<span class="master-badge">👑</span>':'';
-    cell.innerHTML=`${master}<span class="stage-badge" title="${info.name}">${info.icon}</span>
+    cell.innerHTML=`${master}<span class="stage-badge level-${info.level}" title="${info.name}">${info.icon}</span>
       <div class="flower">${flower}<span class="zk">${c}</span></div>
       <div class="zy">${KANJI[c].yomi}</div>
-      <div class="zstats">${learned?"🎓しゅうとく":"✅ "+st.correct+"/2"}　✏️${st.bestTraceScore||0}点</div>`;
+      <div class="zstats">${learned?"🎓しゅうとく":"✅ "+st.correct+"/3"}　✏️${st.bestTraceScore||0}点</div>`;
     cell.addEventListener("click",()=>{ Snd.tap(); startZukanPractice(c); });
     g.appendChild(cell);
   });
@@ -1389,7 +1546,7 @@ function renderZukan(){
 
 
 
-/* ================= 図鑑テスト（習得済み=2回正解した字からランダム） ================= */
+/* ================= 図鑑テスト（習得済み=3回正解した字からランダム） ================= */
 let learnedTestRunning=false;
 function uniqueSample(values,exclude,n){
   const out=[];
@@ -1443,8 +1600,8 @@ async function startLearnedTest(){
   if(learnedTestRunning) return;
   const learned=ALL_CHARS.filter(isLearned);
   if(!learned.length){
-    rewardToast("🎯 まずは かんじを2かい せいかいしよう!");
-    Voice.speak("まずは かんじを にかい せいかいすると テストが できるよ");
+    rewardToast("🎯 まずは かんじを3かい せいかいしよう!");
+    Voice.speak("まずは かんじを さんかい せいかいすると テストが できるよ");
     return;
   }
   learnedTestRunning=true;
@@ -1514,6 +1671,10 @@ function renderParent(){
     <table><tr><th>漢字</th><th>よみ(なりたち+ふつう)</th><th>なぞり</th><th>累計</th></tr>${rows}</table>
     <p style="margin-top:12px;">迷いのあった字は、次回のセッションでもう一度出題するのがおすすめです。</p>`;
 }
+
+/* 各画面の「トップメニュー」ボタン。途中の非同期処理を確実に止めるため再読込してメニューへ戻る。 */
+document.querySelectorAll(".js-menu-return").forEach(b=>b.addEventListener("click",()=>{ Snd.tap(); goTopMenu(); }));
+if(location.hash==="#menu"){ renderSets(); show("#scr-sets"); }
 
 </script>
 </body>
