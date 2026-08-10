@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>くくファーム</title>
+<style>
+  :root{
+    --sky:#BFE6FF;
+    --sky2:#E8F7FF;
+    --field:#F6FBE8;
+    --soil:#7A5230;
+    --soil-d:#5A3A20;
+    --leaf:#41A34A;
+    --leaf-d:#2C7A3B;
+    --sun:#FFC93C;
+    --tomato:#E85C4A;
+    --ink:#33241A;
+    --paper:#FFFDF5;
+    --line:#33241A;
+    --pink:#F58BA8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:"Hiragino Maru Gothic ProN","ヒラギノ丸ゴ ProN W4","M PLUS Rounded 1c","Rounded Mplus 1c","Meiryo",sans-serif;
+    color:var(--ink);
+    background:linear-gradient(180deg,var(--sky) 0%,var(--sky2) 45%,var(--field) 100%);
+    background-attachment:fixed;
+    font-size:20px;
+    overflow:hidden;
+    user-select:none;
+  }
+  #app{position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden;}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden;padding:12px 12px 20px;}
+  .screen.on{display:flex;}
+
+  /* 木の看板風ボタン */
+  .btn{
+    font-family:inherit;font-weight:800;color:var(--ink);
+    background:var(--sun);
+    border:4px solid var(--line);
+    border-radius:18px;
+    box-shadow:0 6px 0 var(--line);
+    padding:16px 22px;
+    font-size:26px;
+    min-height:75px;
+    cursor:pointer;
+    transition:transform .06s, box-shadow .06s;
+    touch-action:manipulation;
+  }
+  .btn:active{transform:translateY(6px);box-shadow:0 0 0 var(--line);}
+  .btn:focus-visible{outline:5px solid var(--tomato);outline-offset:3px;}
+  .btn.green{background:var(--leaf);color:#fff;}
+  .btn.white{background:var(--paper);}
+  .btn.pink{background:var(--pink);color:#fff;}
+  .btn.small{font-size:20px;min-height:60px;padding:10px 14px;border-radius:14px;}
+  .btn[disabled]{opacity:.45;box-shadow:0 6px 0 var(--line);}
+
+  .card{
+    background:var(--paper);
+    border:4px solid var(--line);
+    border-radius:22px;
+    box-shadow:0 6px 0 var(--line);
+    padding:14px;
+  }
+  h1,h2,h3{margin:0;font-weight:900;}
+  .row{display:flex;gap:10px;align-items:center;}
+  .center{justify-content:center;}
+  .wrap{flex-wrap:wrap;}
+  .grow{flex:1;}
+  .muted{opacity:.7;font-size:16px;}
+
+  /* ---- タイトル ---- */
+  #s-title{justify-content:center;align-items:center;text-align:center;gap:18px;}
+  .logo{font-size:52px;font-weight:900;letter-spacing:2px;line-height:1.1;text-shadow:0 4px 0 #fff,0 8px 0 rgba(0,0,0,.12);}
+  .logo small{display:block;font-size:20px;letter-spacing:0;margin-top:6px;opacity:.75;}
+
+  /* ---- ホーム ---- */
+  .home-head{display:flex;gap:10px;align-items:center;margin-bottom:10px;}
+  .streak{font-size:22px;font-weight:900;}
+  .stamps{display:flex;gap:6px;}
+  .stamp{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;}
+  .stamp.on{background:var(--sun);}
+  .dan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .dan{
+    border:4px solid var(--line);border-radius:18px;background:var(--paper);
+    box-shadow:0 5px 0 var(--line);padding:10px 6px;text-align:center;cursor:pointer;
+    font-weight:900;font-size:24px;min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:4px;
+    font-family:inherit;color:var(--ink);
+  }
+  .dan:active{transform:translateY(5px);box-shadow:0 0 0 var(--line);}
+  .dan .bar{height:10px;border:2px solid var(--line);border-radius:6px;background:#fff;overflow:hidden;margin:0 8px;}
+  .dan .bar i{display:block;height:100%;background:var(--leaf);}
+  .dan.locked{opacity:.4;}
+  .dan.done{background:#DFF3D8;}
+  .dan .veg{font-size:13px;font-weight:800;opacity:.8;}
+
+  /* ---- 九九マップ ---- */
+  .map{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;}
+  .map div{aspect-ratio:1/1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;}
+  .map .h{background:transparent;color:var(--ink);opacity:.6;}
+  .cell{background:var(--soil);border:2px solid var(--soil-d);}
+  .cell.seen{background:#9CCB6A;border-color:var(--leaf-d);}
+  .cell.bloom{background:var(--sun);border-color:var(--line);}
+
+  /* ---- 出題 ---- */
+  #s-quiz{padding-top:8px;}
+  .qhead{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .pips{display:flex;gap:4px;flex-wrap:wrap;}
+  .pip{width:16px;height:16px;border-radius:50%;border:3px solid var(--line);background:#fff;}
+  .pip.ok{background:var(--leaf);}
+  .pip.now{background:var(--sun);}
+  .qcard{
+    background:var(--paper);border:5px solid var(--line);border-radius:26px;box-shadow:0 7px 0 var(--line);
+    padding:10px;text-align:center;position:relative;
+  }
+  .qnum{font-size:66px;font-weight:900;letter-spacing:2px;line-height:1.05;}
+  .qyomi{font-size:26px;font-weight:800;color:var(--leaf-d);margin-top:2px;}
+  .qcard.pop{animation:pop .25s ease;}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+  .modes{display:flex;gap:8px;margin:10px 0 8px;}
+  .mode{
+    flex:1;border:4px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 5px 0 var(--line);
+    font-family:inherit;font-weight:900;font-size:19px;padding:10px 4px;min-height:64px;cursor:pointer;color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+  }
+  .mode .ic{font-size:24px;line-height:1;}
+  .mode.on{background:var(--leaf);color:#fff;}
+  .mode:active{transform:translateY(5px);box-shadow:0 0 0 var(--line);}
+
+  .pane{display:none;}
+  .pane.on{display:block;}
+
+  .answerbox{
+    font-size:56px;font-weight:900;height:86px;border:4px dashed var(--line);border-radius:16px;background:#fff;
+    display:flex;align-items:center;justify-content:center;letter-spacing:6px;
+  }
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+  .keypad .btn{font-size:32px;min-height:74px;padding:6px;background:var(--paper);}
+  .keypad .btn.act{background:var(--leaf);color:#fff;font-size:24px;}
+  .keypad .btn.del{background:#fff;font-size:24px;}
+
+  .hwrap{display:flex;gap:10px;justify-content:center;}
+  .hbox{position:relative;}
+  .hbox canvas{
+    width:150px;height:180px;background:#fff;border:4px solid var(--line);border-radius:16px;touch-action:none;display:block;
+  }
+  .hbox .lbl{position:absolute;top:4px;left:8px;font-size:14px;font-weight:800;opacity:.45;}
+  .hbox .guide{position:absolute;inset:0;pointer-events:none;
+    background:
+      linear-gradient(to right,transparent calc(50% - 1px),rgba(0,0,0,.10) 50%,transparent calc(50% + 1px)),
+      linear-gradient(to bottom,transparent calc(50% - 1px),rgba(0,0,0,.10) 50%,transparent calc(50% + 1px));
+    border-radius:16px;}
+  .readout{font-size:22px;font-weight:900;text-align:center;margin-top:8px;min-height:40px;}
+  .readout b{font-size:40px;color:var(--leaf-d);}
+
+  .mic{
+    width:150px;height:150px;border-radius:50%;border:5px solid var(--line);background:var(--tomato);color:#fff;
+    font-size:24px;font-weight:900;box-shadow:0 7px 0 var(--line);cursor:pointer;font-family:inherit;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin:0 auto;
+  }
+  .mic .ic{font-size:44px;}
+  .mic:active{transform:translateY(7px);box-shadow:0 0 0 var(--line);}
+  .mic.rec{background:var(--leaf);animation:pulse 1s infinite;}
+  @keyframes pulse{0%{box-shadow:0 7px 0 var(--line),0 0 0 0 rgba(65,163,74,.5)}70%{box-shadow:0 7px 0 var(--line),0 0 0 24px rgba(65,163,74,0)}100%{box-shadow:0 7px 0 var(--line),0 0 0 0 rgba(65,163,74,0)}}
+
+  /* ---- 判定オーバーレイ ---- */
+  #judge{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:50;padding:16px;text-align:center;}
+  #judge.on{display:flex;}
+  #judge .bg{position:absolute;inset:0;background:rgba(255,255,255,.82);}
+  #judge .in{position:relative;}
+  .maru{width:190px;height:190px;margin:0 auto;}
+  .bigmsg{font-size:44px;font-weight:900;}
+  .yomi-big{font-size:34px;font-weight:900;color:var(--leaf-d);background:#fff;border:4px solid var(--line);border-radius:18px;padding:8px 16px;display:inline-block;box-shadow:0 5px 0 var(--line);}
+
+  /* ---- けっか ---- */
+  .harvest{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;font-size:34px;}
+  .harvest span{animation:drop .4s ease both;}
+  @keyframes drop{from{transform:translateY(-24px) scale(.4);opacity:0}to{transform:none;opacity:1}}
+  details{border:3px solid var(--line);border-radius:14px;background:#fff;padding:8px 10px;font-size:16px;}
+  summary{font-weight:900;cursor:pointer;font-size:17px;}
+  table{width:100%;border-collapse:collapse;font-size:15px;margin-top:6px;}
+  td,th{border-bottom:1px solid #ddd;padding:4px;text-align:left;}
+
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-size:16px;z-index:80;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%;text-align:center;}
+  .toast.on{opacity:.95;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important;}
+  }
+  @media (max-height:760px){
+    .qnum{font-size:56px;}
+    .keypad .btn{min-height:64px;font-size:28px;}
+    .keypad{gap:6px;}
+    .answerbox{height:70px;font-size:46px;}
+    .hbox canvas{height:158px;width:136px;}
+    .modes{margin:8px 0 6px;}
+    .mode{min-height:58px;font-size:17px;}
+  }
+  @media (max-height:640px){
+    .qnum{font-size:46px;} .qyomi{font-size:22px;}
+    .hbox canvas{height:140px;width:124px;} .mic{width:118px;height:118px;}
+    .keypad .btn{min-height:56px;font-size:25px;}
+    .answerbox{height:60px;font-size:40px;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- タイトル -->
+  <section class="screen on" id="s-title">
+    <div class="logo">くくファーム<small>こえ・てがき・キーで こたえる ここのつのはたけ</small></div>
+    <svg width="200" height="120" viewBox="0 0 200 120" aria-hidden="true">
+      <rect x="0" y="80" width="200" height="40" rx="10" fill="#7A5230"/>
+      <circle cx="40" cy="70" r="18" fill="#E85C4A" stroke="#33241A" stroke-width="4"/>
+      <path d="M40 52 l0 -14" stroke="#2C7A3B" stroke-width="6" stroke-linecap="round"/>
+      <path d="M100 84 l0 -34" stroke="#2C7A3B" stroke-width="7" stroke-linecap="round"/>
+      <path d="M100 60 q-24 -6 -28 -26 q26 2 28 26z" fill="#41A34A" stroke="#33241A" stroke-width="3"/>
+      <path d="M100 66 q24 -6 28 -26 q-26 2 -28 26z" fill="#41A34A" stroke="#33241A" stroke-width="3"/>
+      <circle cx="165" cy="66" r="20" fill="#FFC93C" stroke="#33241A" stroke-width="4"/>
+      <path d="M165 46 l0 -12" stroke="#2C7A3B" stroke-width="6" stroke-linecap="round"/>
+    </svg>
+    <button class="btn green" id="btn-start" style="font-size:32px;padding:18px 34px;">はじめる</button>
+    <div class="muted">おとが なります。おとを だせる ところで あそんでね</div>
+  </section>
+
+  <!-- ホーム -->
+  <section class="screen" id="s-home">
+    <div class="home-head">
+      <div class="grow">
+        <div class="streak" id="streak-txt">れんぞく 0にち</div>
+        <div class="stamps" id="stamps"></div>
+      </div>
+      <button class="btn small white" id="btn-map">はたけ ぜんぶ</button>
+    </div>
+
+    <div class="card" style="margin-bottom:10px;">
+      <div class="row" style="gap:8px;">
+        <div class="grow">
+          <div style="font-size:20px;font-weight:900;">きょうの みずやり</div>
+          <div class="muted" id="today-txt">10もん・5ふん くらい</div>
+        </div>
+        <div style="font-size:40px;" id="today-mark">💧</div>
+      </div>
+      <button class="btn green" id="btn-play" style="width:100%;margin-top:8px;">みずやりを はじめる</button>
+    </div>
+
+    <div style="font-weight:900;margin:4px 2px 8px;">どの だんを れんしゅうする？</div>
+    <div class="dan-grid" id="dan-grid"></div>
+    <button class="btn white small" id="btn-mix" style="margin-top:10px;">まざり クイズ（おぼえた だんから）</button>
+    <div class="muted" style="margin-top:10px;text-align:center;">おうちの ひとへ: けっかの さいごに サマリが でます</div>
+  </section>
+
+  <!-- 九九マップ -->
+  <section class="screen" id="s-map">
+    <div class="row" style="margin-bottom:8px;">
+      <h2 class="grow">ここのつの はたけ</h2>
+      <button class="btn small white" data-back="s-home">もどる</button>
+    </div>
+    <div class="card">
+      <div class="map" id="map-grid"></div>
+      <div class="row wrap muted" style="margin-top:10px;gap:12px;">
+        <span><i style="display:inline-block;width:14px;height:14px;background:var(--soil);border:2px solid var(--soil-d);border-radius:4px;"></i> まだ</span>
+        <span><i style="display:inline-block;width:14px;height:14px;background:#9CCB6A;border:2px solid var(--leaf-d);border-radius:4px;"></i> め が でた</span>
+        <span><i style="display:inline-block;width:14px;height:14px;background:var(--sun);border:2px solid var(--line);border-radius:4px;"></i> はな が さいた</span>
+      </div>
+      <div style="margin-top:10px;font-weight:900;" id="map-count"></div>
+    </div>
+    <div class="card" style="margin-top:10px;">
+      <div style="font-weight:900;margin-bottom:6px;">やさい ずかん</div>
+      <div id="zukan" style="font-size:34px;letter-spacing:6px;"></div>
+    </div>
+  </section>
+
+  <!-- きく・まねする -->
+  <section class="screen" id="s-learn">
+    <div class="row" style="margin-bottom:8px;">
+      <h2 class="grow" id="learn-title">5の だん を きこう</h2>
+      <button class="btn small white" data-back="s-home">やめる</button>
+    </div>
+    <div class="qcard" style="padding:18px 10px;">
+      <div class="muted" id="learn-count">1 / 9</div>
+      <div class="qnum" id="learn-num">5 × 1</div>
+      <div class="qyomi" style="font-size:34px;" id="learn-yomi">ごいちが ご</div>
+    </div>
+    <div class="muted" style="text-align:center;margin:12px 0;">きいたら、こえに だして まねしてね</div>
+    <div class="row" style="gap:10px;">
+      <button class="btn white grow" id="learn-again">もういちど きく</button>
+      <button class="btn green grow" id="learn-next">つぎ</button>
+    </div>
+  </section>
+
+  <!-- クイズ -->
+  <section class="screen" id="s-quiz">
+    <div class="qhead">
+      <div class="pips grow" id="pips"></div>
+      <button class="btn small white" data-back="s-home" style="min-height:44px;padding:6px 10px;font-size:15px;">やめる</button>
+    </div>
+
+    <div class="qcard" id="qcard">
+      <div class="qnum" id="q-num">5 × 3</div>
+      <div class="qyomi" id="q-yomi">ごさん…？</div>
+      <button class="btn white small" id="btn-replay" style="margin-top:6px;">🔊 もういちど きく</button>
+    </div>
+
+    <div class="modes">
+      <button class="mode" data-mode="voice"><span class="ic">🎤</span>こえ</button>
+      <button class="mode" data-mode="write"><span class="ic">✏️</span>てがき</button>
+      <button class="mode on" data-mode="key"><span class="ic">🔢</span>キー</button>
+    </div>
+
+    <!-- こえ -->
+    <div class="pane" id="p-voice">
+      <button class="mic" id="mic-btn"><span class="ic">🎤</span><span id="mic-label">おして はなす</span></button>
+      <div class="readout" id="voice-read">こたえを こえで いってね</div>
+    </div>
+
+    <!-- てがき -->
+    <div class="pane" id="p-write">
+      <div class="hwrap">
+        <div class="hbox"><canvas id="cv-t" width="150" height="180"></canvas><div class="guide"></div><div class="lbl">じゅうのくらい</div></div>
+        <div class="hbox"><canvas id="cv-o" width="150" height="180"></canvas><div class="guide"></div><div class="lbl">いちのくらい</div></div>
+      </div>
+      <div class="readout" id="write-read">すうじを かいてね</div>
+      <div class="row" style="gap:10px;margin-top:6px;">
+        <button class="btn white grow small" id="write-clear">けす</button>
+        <button class="btn green grow" id="write-ok" disabled>これで こたえる</button>
+      </div>
+    </div>
+
+    <!-- キー -->
+    <div class="pane on" id="p-key">
+      <div class="answerbox" id="key-box"></div>
+      <div class="keypad" id="keypad"></div>
+    </div>
+  </section>
+
+  <!-- けっか -->
+  <section class="screen" id="s-result">
+    <h2 style="text-align:center;font-size:32px;margin:6px 0;">しゅうかく！</h2>
+    <div class="card" style="text-align:center;">
+      <div class="harvest" id="harvest"></div>
+      <div style="font-size:26px;font-weight:900;margin-top:8px;" id="result-line">10もん がんばった！</div>
+      <div id="result-medal" style="font-size:56px;">🥇</div>
+      <div class="muted" id="result-streak"></div>
+    </div>
+    <div class="row" style="gap:10px;margin-top:10px;">
+      <button class="btn white grow" data-back="s-home">はたけに もどる</button>
+      <button class="btn green grow" id="btn-again">もういっかい</button>
+    </div>
+    <details style="margin-top:12px;">
+      <summary>おうちの ひとへ（がくしゅう サマリ）</summary>
+      <div id="parent-sum"></div>
+    </details>
+  </section>
+</div>
+
+<div id="judge"><div class="bg"></div><div class="in" id="judge-in"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   くくファーム — 九九あんき アプリ（単一HTML）
+   ========================================================= */
+
+/* ---------- 九九の となえ（prefix|answer） ---------- */
+const YOMI = {
+ 1:["いんいちが|いち","いんにが|に","いんさんが|さん","いんしが|し","いんごが|ご","いんろくが|ろく","いんしちが|しち","いんはちが|はち","いんくが|く"],
+ 2:["にいちが|に","ににんが|し","にさんが|ろく","にしが|はち","にご|じゅう","にろく|じゅうに","にしち|じゅうし","にはち|じゅうろく","にく|じゅうはち"],
+ 3:["さんいちが|さん","さんにが|ろく","さざんが|く","さんし|じゅうに","さんご|じゅうご","さぶろく|じゅうはち","さんしち|にじゅういち","さんぱ|にじゅうし","さんく|にじゅうしち"],
+ 4:["しいちが|し","しにが|はち","しさん|じゅうに","しし|じゅうろく","しご|にじゅう","しろく|にじゅうし","ししち|にじゅうはち","しは|さんじゅうに","しく|さんじゅうろく"],
+ 5:["ごいちが|ご","ごに|じゅう","ごさん|じゅうご","ごし|にじゅう","ごご|にじゅうご","ごろく|さんじゅう","ごしち|さんじゅうご","ごは|しじゅう","ごっく|しじゅうご"],
+ 6:["ろくいちが|ろく","ろくに|じゅうに","ろくさん|じゅうはち","ろくし|にじゅうし","ろくご|さんじゅう","ろくろく|さんじゅうろく","ろくしち|しじゅうに","ろくは|しじゅうはち","ろっく|ごじゅうし"],
+ 7:["しちいちが|しち","しちに|じゅうし","しちさん|にじゅういち","しちし|にじゅうはち","しちご|さんじゅうご","しちろく|しじゅうに","しちしち|しじゅうく","しちは|ごじゅうろく","しちく|ろくじゅうさん"],
+ 8:["はちいちが|はち","はちに|じゅうろく","はちさん|にじゅうし","はちし|さんじゅうに","はちご|しじゅう","はちろく|しじゅうはち","はちしち|ごじゅうろく","はっぱ|ろくじゅうし","はっく|しちじゅうに"],
+ 9:["くいちが|く","くに|じゅうはち","くさん|にじゅうしち","くし|さんじゅうろく","くご|しじゅうご","くろく|ごじゅうし","くしち|ろくじゅうさん","くは|しちじゅうに","くく|はちじゅういち"]
+};
+const yomiPre = (d,m)=>YOMI[d][m-1].split("|")[0];
+const yomiAns = (d,m)=>YOMI[d][m-1].split("|")[1];
+const yomiFull= (d,m)=>YOMI[d][m-1].replace("|","");
+
+/* だんの じゅんばん（がっこうの ならい じゅん） */
+const DAN_ORDER=[5,2,3,4,6,7,8,9,1];
+const VEG={5:"🥕",2:"🍅",3:"🌽",4:"🍆",6:"🥔",7:"🍓",8:"🎃",9:"🍉",1:"🌻"};
+const VEGNAME={5:"にんじん",2:"トマト",3:"とうもろこし",4:"なす",6:"じゃがいも",7:"いちご",8:"かぼちゃ",9:"すいか",1:"ひまわり"};
+
+/* =========================================================
+   ほぞん（storage）— artifact / ブラウザ / メモリの じゅんに
+   ========================================================= */
+const Store=(()=>{
+  const KEY="kuku-farm-v1";
+  let mem=null;
+  async function load(){
+    try{ if(window.storage&&window.storage.get){ const r=await window.storage.get(KEY); if(r&&r.value) return JSON.parse(r.value);} }catch(e){}
+    try{ const s=localStorage.getItem(KEY); if(s) return JSON.parse(s);}catch(e){}
+    return mem;
+  }
+  async function save(o){
+    mem=o;
+    try{ if(window.storage&&window.storage.set){ await window.storage.set(KEY,JSON.stringify(o)); return; } }catch(e){}
+    try{ localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){}
+  }
+  return {load,save};
+})();
+
+/* データ */
+let S={ cells:{}, heard:{}, junDone:{}, cleared:[], stampDays:[], streak:0, lastDay:null };
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();};
+const ck=(d,m)=>d+"_"+m;
+function cellState(d,m){const c=S.cells[ck(d,m)];if(!c)return 0;return c.bloom?2:1;}
+function bloomCount(d){let n=0;for(let m=1;m<=9;m++)if(cellState(d,m)===2)n++;return n;}
+function totalBloom(){let n=0;for(let d=1;d<=9;d++)n+=bloomCount(d);return n;}
+function danUnlocked(d){
+  const i=DAN_ORDER.indexOf(d);
+  if(i===0)return true;
+  return S.cleared.includes(DAN_ORDER[i-1]);
+}
+async function persist(){ await Store.save(S); }
+
+/* =========================================================
+   おと（Web Audio）
+   ========================================================= */
+const AudioSys=(()=>{
+  let ctx=null,master,sfxBus;const buffers={};
+  function ensure(){
+    if(ctx){if(ctx.state==="suspended")ctx.resume();return ctx;}
+    try{ctx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}
+    master=ctx.createGain();sfxBus=ctx.createGain();sfxBus.gain.value=.9;
+    sfxBus.connect(master);master.connect(ctx.destination);
+    return ctx;
+  }
+  function render(p){
+    const c=ensure(); if(!c)return null;
+    const sr=44100,dur=(p.attack||.005)+(p.sustain||0)+(p.release||.1);
+    const n=Math.max(1,sr*dur|0),buf=c.createBuffer(1,n,sr),d=buf.getChannelData(0);
+    let phase=0,freq=p.freq||440,lp=0,jumped=false;
+    for(let i=0;i<n;i++){
+      const t=i/sr;
+      if(p.pitchJump&&t>(p.jumpTime||.05)&&!jumped){freq*=p.pitchJump;jumped=true;}
+      freq*=Math.pow(p.slide||1,1/sr);
+      phase+=2*Math.PI*freq/sr;
+      let s;
+      switch(p.shape){
+        case "square":s=Math.sin(phase)>0?1:-1;break;
+        case "saw":s=2*((phase/(2*Math.PI))%1)-1;break;
+        case "triangle":s=1-4*Math.abs(Math.round(phase/(2*Math.PI))-phase/(2*Math.PI));break;
+        case "noise":s=Math.random()*2-1;break;
+        default:s=Math.sin(phase);
+      }
+      if(p.noise)s=s*(1-p.noise)+(Math.random()*2-1)*p.noise;
+      if(p.lpStart){const k=p.lpStart+((p.lpEnd||0)-p.lpStart)*(t/dur);lp+=k*(s-lp);s=lp;}
+      const a=p.attack||.005,su=a+(p.sustain||0);
+      const env=t<a?t/a:t<su?1:Math.max(0,1-(t-su)/(p.release||.1));
+      d[i]=s*env*(p.volume||.4);
+    }
+    return buf;
+  }
+  function def(){
+    if(buffers.tap)return;
+    buffers.tap=render({shape:"sine",freq:660,attack:.004,release:.07,volume:.22});
+    buffers.pick=render({shape:"square",freq:880,pitchJump:1.5,jumpTime:.05,attack:.004,release:.13,volume:.22});
+    buffers.soft=render({shape:"sine",freq:400,slide:.6,attack:.01,release:.22,volume:.2});
+    buffers.pop=render({shape:"sine",freq:520,pitchJump:1.8,jumpTime:.04,attack:.004,release:.16,volume:.3});
+  }
+  function play(name,vol){
+    const c=ensure(); if(!c||!buffers[name])return;
+    const src=c.createBufferSource();src.buffer=buffers[name];
+    src.playbackRate.value=1+(Math.random()*2-1)*.04;
+    const g=c.createGain();g.gain.value=vol||1;
+    src.connect(g);g.connect(sfxBus);src.start();
+  }
+  function tone(freq,when,dur,shape,vol){
+    const c=ensure(); if(!c)return;
+    const t0=(when||0)+c.currentTime;
+    const o=c.createOscillator();o.type=shape||"sine";o.frequency.value=freq;
+    const g=c.createGain();
+    g.gain.setValueAtTime(.0001,t0);
+    g.gain.exponentialRampToValueAtTime(vol||.3,t0+.01);
+    g.gain.exponentialRampToValueAtTime(.001,t0+(dur||.18));
+    o.connect(g);g.connect(sfxBus);o.start(t0);o.stop(t0+(dur||.18)+.05);
+  }
+  const chord=(list,base)=>list.forEach((f,i)=>tone(f,i*.07,.34,"triangle",base||.25));
+  return{
+    ensure,def,play,tone,
+    correct(){chord([523.25,659.25,783.99]);},
+    bloomJingle(){chord([523.25,659.25,783.99,1046.5],.3);},
+    fanfare(){[523.25,659.25,783.99,1046.5,783.99,1046.5].forEach((f,i)=>tone(f,i*.13,.3,"triangle",.3));},
+    gentle(){play("soft");}
+  };
+})();
+document.addEventListener("pointerdown",()=>{AudioSys.ensure();AudioSys.def();},{passive:true});
+
+/* =========================================================
+   よみあげ（Web Speech）
+   ========================================================= */
+const Speech=(()=>{
+  const ok="speechSynthesis" in window;
+  let jaVoice=null;
+  function pick(){
+    if(!ok)return;
+    const vs=speechSynthesis.getVoices()||[];
+    jaVoice=vs.find(v=>/ja[-_]JP/i.test(v.lang))||vs.find(v=>/^ja/i.test(v.lang))||null;
+  }
+  if(ok){pick();try{speechSynthesis.onvoiceschanged=pick;}catch(e){}}
+  function say(text,rate,cb){
+    if(!ok){if(cb)setTimeout(cb,300);return;}
+    try{
+      speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(text);
+      u.lang="ja-JP";u.rate=rate||.95;u.pitch=1.15;
+      if(jaVoice)u.voice=jaVoice;
+      if(cb)u.onend=cb;
+      speechSynthesis.speak(u);
+    }catch(e){if(cb)setTimeout(cb,300);}
+  }
+  return{say,stop(){try{speechSynthesis.cancel();}catch(e){}}};
+})();
+
+/* =========================================================
+   ユーティリティ
+   ========================================================= */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+function show(id){ $$(".screen").forEach(s=>s.classList.toggle("on",s.id===id)); }
+let toastT=null;
+function toast(msg){
+  const t=$("#toast");t.textContent=msg;t.classList.add("on");
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),2600);
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* =========================================================
+   こえ（音声認識）の こたえ かいせき
+   ========================================================= */
+const KANA_ONE={"いち":1,"ひとつ":1,"に":2,"ふたつ":2,"さん":3,"し":4,"よん":4,"よ":4,"ご":5,"ろく":6,"しち":7,"なな":7,"はち":8,"きゅう":9,"く":9};
+function parseKana(s){
+  if(!s)return null;
+  if(KANA_ONE[s]!==undefined)return KANA_ONE[s];
+  const i=s.indexOf("じゅう");
+  if(i>=0){
+    const L=s.slice(0,i),R=s.slice(i+3);
+    let tens;
+    if(L==="")tens=1;
+    else if(KANA_ONE[L]!==undefined&&KANA_ONE[L]>=2)tens=KANA_ONE[L];
+    else return null;
+    let ones=0;
+    if(R!==""){ if(KANA_ONE[R]!==undefined)ones=KANA_ONE[R]; else return null; }
+    return tens*10+ones;
+  }
+  return null;
+}
+function kanaSuffixNumber(s){
+  for(let i=0;i<s.length;i++){const v=parseKana(s.slice(i));if(v!==null)return v;}
+  return null;
+}
+const KANJI={"〇":0,"零":0,"一":1,"二":2,"三":3,"四":4,"五":5,"六":6,"七":7,"八":8,"九":9};
+function kanjiNumber(s){
+  // 例: 五十六 / 十二 / 八
+  let m=s.match(/([一二三四五六七八九])?十([一二三四五六七八九])?|[〇零一二三四五六七八九]/g);
+  if(!m)return null;
+  const last=m[m.length-1];
+  if(last.indexOf("十")>=0){
+    const p=last.split("十");
+    const t=p[0]?KANJI[p[0]]:1, o=p[1]?KANJI[p[1]]:0;
+    return t*10+o;
+  }
+  return KANJI[last];
+}
+function normalizeTranscript(t){
+  return (t||"")
+    .replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))
+    .replace(/[\s、。！？!?,.・ー]/g,"")
+    .toLowerCase();
+}
+/** こたえの すうじを とりだす。となえ ぜんぶ にも たいおう */
+function extractAnswer(raw){
+  const t=normalizeTranscript(raw);
+  if(!t)return null;
+  // 1) 九九の となえ ぜんぶ（例: さんしじゅうに）。いちばん ながく あう ものを とる
+  let bestLen=0,bestVal=null;
+  for(let d=1;d<=9;d++)for(let m=1;m<=9;m++){
+    const f=yomiFull(d,m);
+    if(t.endsWith(f)&&f.length>bestLen){bestLen=f.length;bestVal=d*m;}
+  }
+  if(bestVal!==null)return bestVal;
+  // 2) すうじ
+  const dm=t.match(/\d+/g);
+  if(dm)return parseInt(dm[dm.length-1],10);
+  // 3) かんじ
+  const kj=kanjiNumber(t);
+  if(kj!==null&&kj!==undefined)return kj;
+  // 4) かな
+  return kanaSuffixNumber(t);
+}
+
+/* =========================================================
+   てがき すうじ にんしき（テンプレートマッチング）
+   ========================================================= */
+const Recog=(()=>{
+  const N=16, templates=[];
+  function gridFromCanvas(cv){
+    const ctx=cv.getContext("2d");
+    const w=cv.width,h=cv.height;
+    const img=ctx.getImageData(0,0,w,h).data;
+    let minX=w,minY=h,maxX=-1,maxY=-1;
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      if(img[(y*w+x)*4+3]>40){ if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
+    }
+    if(maxX<0)return null;
+    const bw=maxX-minX+1,bh=maxY-minY+1;
+    const scale=12/Math.max(bw,bh);
+    const dw=Math.max(1,Math.round(bw*scale)),dh=Math.max(1,Math.round(bh*scale));
+    const off=document.createElement("canvas");off.width=N;off.height=N;
+    const o=off.getContext("2d");
+    o.drawImage(cv,minX,minY,bw,bh,(N-dw)/2,(N-dh)/2,dw,dh);
+    const d=o.getImageData(0,0,N,N).data;
+    let g=new Float32Array(N*N);
+    for(let i=0;i<N*N;i++)g[i]=d[i*4+3]/255;
+    g=blur(blur(g));
+    return {g:norm(g),aspect:bw/bh};
+  }
+  function blur(g){
+    const out=new Float32Array(N*N);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+      let s=0,c=0;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+        const yy=y+dy,xx=x+dx;
+        if(yy<0||yy>=N||xx<0||xx>=N)continue;
+        s+=g[yy*N+xx];c++;
+      }
+      out[y*N+x]=s/c;
+    }
+    return out;
+  }
+  function norm(g){
+    let s=0;for(let i=0;i<g.length;i++)s+=g[i]*g[i];
+    s=Math.sqrt(s)||1;
+    const o=new Float32Array(g.length);
+    for(let i=0;i<g.length;i++)o[i]=g[i]/s;
+    return o;
+  }
+  function sim(a,b){let s=0;for(let i=0;i<a.length;i++)s+=a[i]*b[i];return s;}
+
+  function makeTemplates(){
+    if(templates.length)return;
+    const cv=document.createElement("canvas");cv.width=140;cv.height=170;
+    const c=cv.getContext("2d");
+    const fonts=["bold 130px sans-serif","130px sans-serif","bold 130px serif","130px serif",
+                 "bold italic 130px sans-serif",'bold 130px "Comic Sans MS",cursive'];
+    for(let d=0;d<=9;d++){
+      fonts.forEach(f=>{
+        c.clearRect(0,0,cv.width,cv.height);
+        c.fillStyle="#000";c.font=f;c.textAlign="center";c.textBaseline="middle";
+        c.fillText(String(d),70,88);
+        const g=gridFromCanvas(cv);
+        if(g)templates.push({d,g:g.g,aspect:g.aspect});
+      });
+    }
+    // てがき ふうの ついか テンプレート
+    const paths={
+      1:[[[70,20],[70,150]]],
+      4:[[[85,20],[35,105],[110,105]],[[85,20],[85,150]]],
+      7:[[[30,25],[110,25],[62,150]]],
+      9:[[[95,55],[60,30],[35,60],[60,88],[95,60],[95,150]]]
+    };
+    Object.keys(paths).forEach(k=>{
+      c.clearRect(0,0,cv.width,cv.height);
+      c.strokeStyle="#000";c.lineWidth=13;c.lineCap="round";c.lineJoin="round";
+      paths[k].forEach(pt=>{
+        c.beginPath();c.moveTo(pt[0][0],pt[0][1]);
+        for(let i=1;i<pt.length;i++)c.lineTo(pt[i][0],pt[i][1]);
+        c.stroke();
+      });
+      const g=gridFromCanvas(cv);
+      if(g)templates.push({d:parseInt(k,10),g:g.g,aspect:g.aspect});
+    });
+  }
+  function recognize(cv){
+    makeTemplates();
+    const t=gridFromCanvas(cv);
+    if(!t)return null;
+    const score=new Array(10).fill(-1);
+    templates.forEach(tp=>{const s=sim(t.g,tp.g);if(s>score[tp.d])score[tp.d]=s;});
+    if(t.aspect<0.30)score[1]+=0.14;          // ほそい → 1
+    if(t.aspect>0.72)score[1]-=0.10;
+    let best=0;for(let i=1;i<10;i++)if(score[i]>score[best])best=i;
+    return {digit:best,score:score[best]};
+  }
+  return{recognize};
+})();
+
+/* =========================================================
+   てがき キャンバス
+   ========================================================= */
+function setupPad(cv,onChange){
+  const ctx=cv.getContext("2d");
+  ctx.lineWidth=12;ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#33241A";
+  let drawing=false,dirty=false,timer=null;
+  const pos=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*cv.width/r.width,y:(e.clientY-r.top)*cv.height/r.height};};
+  cv.addEventListener("pointerdown",e=>{
+    e.preventDefault();cv.setPointerCapture(e.pointerId);
+    drawing=true;dirty=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+.1,p.y);ctx.stroke();
+    clearTimeout(timer);
+  });
+  cv.addEventListener("pointermove",e=>{ if(!drawing)return;e.preventDefault();const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke(); });
+  const end=()=>{ if(!drawing)return;drawing=false;clearTimeout(timer);timer=setTimeout(onChange,550); };
+  cv.addEventListener("pointerup",end);
+  cv.addEventListener("pointercancel",end);
+  cv.addEventListener("pointerleave",end);
+  return{
+    clear(){ctx.clearRect(0,0,cv.width,cv.height);dirty=false;},
+    isEmpty(){return !dirty;},
+    canvas:cv
+  };
+}
+
+/* =========================================================
+   ゲーム じょうたい
+   ========================================================= */
+let Q={list:[],i:0,dan:null,mode:"jun",wrongLog:[],firstTryOK:0,harvest:0,answered:false,newBloom:[]};
+let inputMode="key", keyBuf="", sessionCount=0, learnQueue=[], learnIdx=0, learnAfter=null;
+let padT=null,padO=null,writeNum=null;
+
+/* ---------- がめん: ホーム ---------- */
+function renderHome(){
+  $("#streak-txt").textContent="れんぞく "+S.streak+"にち";
+  const st=$("#stamps");st.innerHTML="";
+  const days=["にち","げつ","か","すい","もく","きん","ど"];
+  const now=new Date();
+  for(let i=6;i>=0;i--){
+    const d=new Date(now.getTime()-i*86400000);
+    const key=d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+    const el=document.createElement("div");
+    el.className="stamp"+(S.stampDays.includes(key)?" on":"");
+    el.textContent=S.stampDays.includes(key)?"🌱":days[d.getDay()];
+    st.appendChild(el);
+  }
+  const doneToday=S.stampDays.includes(today());
+  $("#today-mark").textContent=doneToday?"✅":"💧";
+  $("#today-txt").textContent=doneToday?"きょうは おわったよ。おかわりも できる":"10もん・5ふん くらい";
+
+  const g=$("#dan-grid");g.innerHTML="";
+  DAN_ORDER.forEach(d=>{
+    const b=document.createElement("button");
+    const n=bloomCount(d),un=danUnlocked(d);
+    b.className="dan"+(un?"":" locked")+(n===9?" done":"");
+    b.innerHTML='<div>'+d+'の だん '+(n===9?VEG[d]:"")+'</div>'+
+      '<div class="bar"><i style="width:'+(n/9*100)+'%"></i></div>'+
+      '<div class="veg">'+(un?(n===9?"できた！":n+" / 9"):"まだ ひらかない")+'</div>';
+    b.onclick=()=>{ AudioSys.play("tap");
+      if(!un){toast("まえの だんを おわらせると ひらくよ");return;}
+      startSession(d);
+    };
+    g.appendChild(b);
+  });
+  $("#btn-mix").disabled=S.cleared.length<2;
+}
+function renderMap(){
+  const g=$("#map-grid");g.innerHTML="";
+  const head=document.createElement("div");head.className="h";head.textContent="×";g.appendChild(head);
+  for(let m=1;m<=9;m++){const h=document.createElement("div");h.className="h";h.textContent=m;g.appendChild(h);}
+  for(let d=1;d<=9;d++){
+    const h=document.createElement("div");h.className="h";h.textContent=d;g.appendChild(h);
+    for(let m=1;m<=9;m++){
+      const c=document.createElement("div");
+      const s=cellState(d,m);
+      c.className="cell"+(s===1?" seen":s===2?" bloom":"");
+      c.textContent=s===2?"✿":"";
+      c.title=d+"×"+m;
+      g.appendChild(c);
+    }
+  }
+  $("#map-count").textContent="はな が さいた: "+totalBloom()+" / 81";
+  $("#zukan").textContent=S.cleared.length?S.cleared.map(d=>VEG[d]).join(" "):"まだ ないよ";
+}
+
+/* ---------- セッション かいし ---------- */
+function startSession(dan,forceQuiz){
+  Q.dan=dan;
+  if(dan!=="mix"&&!S.heard[dan]&&!forceQuiz){ startLearn(dan); return; }
+  buildQuestions(dan);
+  Q.i=0;Q.wrongLog=[];Q.firstTryOK=0;Q.harvest=0;Q.newBloom=[];
+  inputModeSet(inputMode);
+  show("s-quiz");
+  askCurrent();
+}
+function buildQuestions(dan){
+  let list=[];
+  if(dan==="mix"){
+    const pool=[];
+    S.cleared.forEach(d=>{for(let m=1;m<=9;m++)pool.push([d,m]);});
+    shuffle(pool);list=pool.slice(0,10);
+    Q.mode="mix";
+  }else if(!S.junDone[dan]){
+    for(let m=1;m<=9;m++)list.push([dan,m]);
+    list.push([dan,1+Math.random()*9|0]);
+    Q.mode="jun";
+  }else{
+    const pool=[];
+    for(let m=1;m<=9;m++){ pool.push([dan,m]); if(cellState(dan,m)<2)pool.push([dan,m]); }
+    shuffle(pool);list=pool.slice(0,10);
+    Q.mode="bara";
+  }
+  Q.list=list.map(x=>({d:x[0],m:x[1],retry:false}));
+}
+
+/* ---------- きく・まねする ---------- */
+function startLearn(dan){
+  learnQueue=[];for(let m=1;m<=9;m++)learnQueue.push(m);
+  learnIdx=0;learnAfter=dan;
+  $("#learn-title").textContent=dan+"の だん を きこう";
+  show("s-learn");
+  renderLearn();
+}
+function renderLearn(){
+  const d=learnAfter,m=learnQueue[learnIdx];
+  $("#learn-count").textContent=(learnIdx+1)+" / 9";
+  $("#learn-num").textContent=d+" × "+m;
+  $("#learn-yomi").textContent=yomiFull(d,m);
+  $("#learn-next").textContent=(learnIdx===8)?"クイズへ":"つぎ";
+  Speech.say(yomiFull(d,m),.85);
+}
+$("#learn-again").onclick=()=>{AudioSys.play("tap");Speech.say(yomiFull(learnAfter,learnQueue[learnIdx]),.8);};
+$("#learn-next").onclick=()=>{
+  AudioSys.play("pick");
+  if(learnIdx>=8){
+    S.heard[learnAfter]=true;persist();
+    startSession(learnAfter,true);
+  }else{ learnIdx++;renderLearn(); }
+};
+
+/* ---------- しゅつだい ---------- */
+function askCurrent(){
+  const q=Q.list[Q.i];
+  if(!q){finishSession();return;}
+  Q.answered=false;
+  $("#q-num").textContent=q.d+" × "+q.m;
+  $("#q-yomi").textContent=yomiPre(q.d,q.m)+"…？";
+  renderPips();
+  clearInputs();
+  Speech.say(yomiPre(q.d,q.m)+"？",.9);
+}
+function renderPips(){
+  const p=$("#pips");p.innerHTML="";
+  Q.list.forEach((q,i)=>{
+    const e=document.createElement("div");
+    e.className="pip"+(i<Q.i?" ok":i===Q.i?" now":"");
+    p.appendChild(e);
+  });
+}
+$("#btn-replay").onclick=()=>{
+  const q=Q.list[Q.i];if(!q)return;
+  AudioSys.play("tap");Speech.say(yomiPre(q.d,q.m)+"？",.8);
+};
+
+/* ---------- こたえ はんてい ---------- */
+function submit(val){
+  if(Q.answered||val===null||val===undefined||isNaN(val))return;
+  const q=Q.list[Q.i];if(!q)return;
+  Q.answered=true;
+  const correct=q.d*q.m;
+  if(val===correct)onCorrect(q);
+  else onWrong(q,val);
+}
+function onCorrect(q){
+  const key=ck(q.d,q.m);
+  const c=S.cells[key]||{run:0,bloom:false};
+  if(!q.retry)c.run=(c.run||0)+1; else c.run=Math.max(c.run||0,1);
+  let bloomed=false;
+  if(!c.bloom&&c.run>=2){c.bloom=true;bloomed=true;Q.newBloom.push(q.d+"×"+q.m);}
+  S.cells[key]=c;
+  if(!q.retry)Q.firstTryOK++;
+  Q.harvest++;
+  AudioSys.play("pick");
+  if(bloomed)AudioSys.bloomJingle();else AudioSys.correct();
+  $("#qcard").classList.add("pop");setTimeout(()=>$("#qcard").classList.remove("pop"),260);
+  judgeShow(
+    '<svg class="maru" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="36" fill="none" stroke="#E85C4A" stroke-width="10" stroke-linecap="round"/></svg>'+
+    '<div class="bigmsg">'+(bloomed?"はなが さいた！":"せいかい！")+'</div>'+
+    '<div class="yomi-big">'+yomiFull(q.d,q.m)+'</div>'+
+    (bloomed?'<div style="font-size:40px;margin-top:6px;">🌸</div>':''),
+    1350
+  );
+  Speech.say(yomiFull(q.d,q.m),.9);
+  persist();
+  setTimeout(()=>{Q.i++;askCurrent();},1400);
+}
+function onWrong(q,val){
+  const key=ck(q.d,q.m);
+  const c=S.cells[key]||{run:0,bloom:false};
+  c.run=0;S.cells[key]=c;
+  Q.wrongLog.push({d:q.d,m:q.m,ans:val});
+  AudioSys.gentle();
+  judgeShow(
+    '<div class="bigmsg" style="font-size:34px;">おしい！ もういちど</div>'+
+    '<div style="font-size:20px;margin:6px 0;">こう となえるよ</div>'+
+    '<div class="yomi-big">'+yomiFull(q.d,q.m)+'</div>'+
+    '<div style="font-size:44px;font-weight:900;margin-top:8px;">'+q.d+' × '+q.m+' = '+(q.d*q.m)+'</div>'+
+    '<button class="btn green" id="judge-next" style="margin-top:14px;">いえた！ つぎへ</button>',
+    0
+  );
+  Speech.say(yomiFull(q.d,q.m),.8);
+  $("#judge-next").onclick=()=>{
+    AudioSys.play("tap");
+    judgeHide();
+    // 2〜3もん あとに もういちど
+    const pos=Math.min(Q.list.length,Q.i+3);
+    Q.list.splice(pos,0,{d:q.d,m:q.m,retry:true});
+    Q.i++;askCurrent();
+  };
+  persist();
+}
+function judgeShow(html,autoMs){
+  $("#judge-in").innerHTML=html;
+  $("#judge").classList.add("on");
+  if(autoMs)setTimeout(judgeHide,autoMs);
+}
+function judgeHide(){$("#judge").classList.remove("on");}
+
+/* ---------- セッション しゅうりょう ---------- */
+function finishSession(){
+  sessionCount++;
+  const t=today();
+  if(!S.stampDays.includes(t)){
+    S.stampDays.push(t);
+    const y=new Date(Date.now()-86400000);
+    const yk=y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate();
+    S.streak=S.stampDays.includes(yk)?(S.streak+1):1;
+    S.lastDay=t;
+  }
+  // だん クリア はんてい
+  if(Q.dan!=="mix"){
+    if(Q.mode==="jun")S.junDone[Q.dan]=true;
+    if(bloomCount(Q.dan)===9&&!S.cleared.includes(Q.dan)){
+      S.cleared.push(Q.dan);
+      toast(Q.dan+"の だん クリア！ "+VEGNAME[Q.dan]+"を てにいれた "+VEG[Q.dan]);
+    }
+  }
+  persist();
+
+  const h=$("#harvest");h.innerHTML="";
+  const veg=Q.dan==="mix"?"🌼":VEG[Q.dan];
+  for(let i=0;i<Q.harvest;i++){
+    const s=document.createElement("span");s.textContent=veg;s.style.animationDelay=(i*.06)+"s";h.appendChild(s);
+  }
+  const total=Q.list.length;
+  $("#result-line").textContent=total+"もん のうち "+Q.firstTryOK+"もん、いっぱつで せいかい！";
+  $("#result-medal").textContent=Q.firstTryOK>=total?"🥇":Q.firstTryOK>=total*0.7?"🥈":"🥉";
+  $("#result-streak").textContent="れんぞく "+S.streak+"にち　／　はなが さいた "+totalBloom()+" / 81"+
+    (Q.newBloom.length?"（きょう さいた: "+Q.newBloom.join("、")+"）":"");
+
+  let sum='<table><tr><th>ないよう</th><th>けっか</th></tr>';
+  sum+='<tr><td>れんしゅう</td><td>'+(Q.dan==="mix"?"まざり":Q.dan+"の だん")+'（'+({jun:"じゅんばん",bara:"ばらばら",mix:"まざり"}[Q.mode])+'）</td></tr>';
+  sum+='<tr><td>出題数</td><td>'+total+'問</td></tr>';
+  sum+='<tr><td>一発正答</td><td>'+Q.firstTryOK+'問（'+Math.round(Q.firstTryOK/total*100)+'%）</td></tr>';
+  sum+='<tr><td>累計の定着</td><td>'+totalBloom()+' / 81 マス（同じ式に2回連続正答で開花）</td></tr>';
+  sum+='</table>';
+  if(Q.wrongLog.length){
+    sum+='<div style="margin-top:8px;font-weight:900;">つまずいた式</div><table><tr><th>式</th><th>答えた数</th><th>正答</th></tr>';
+    Q.wrongLog.forEach(w=>{sum+='<tr><td>'+w.d+'×'+w.m+'</td><td>'+w.ans+'</td><td>'+(w.d*w.m)+'</td></tr>';});
+    sum+='</table><div style="margin-top:6px;">この式は2〜3問後に再出題しています。次回も自動で多めに出ます。</div>';
+  }else{
+    sum+='<div style="margin-top:8px;">つまずいた式はありませんでした。</div>';
+  }
+  $("#parent-sum").innerHTML=sum;
+
+  AudioSys.fanfare();
+  show("s-result");
+  Speech.say("よく がんばりました",1);
+  if(sessionCount>=2){ setTimeout(()=>toast("たくさん やったね。きゅうけい しよう！"),1800); }
+}
+$("#btn-again").onclick=()=>{
+  AudioSys.play("tap");
+  if(sessionCount>=2){toast("きゅうけい してから また やろうね");}
+  startSession(Q.dan,true);
+};
+
+/* =========================================================
+   にゅうりょく モード
+   ========================================================= */
+function inputModeSet(m){
+  inputMode=m;
+  $$(".mode").forEach(b=>b.classList.toggle("on",b.dataset.mode===m));
+  $$(".pane").forEach(p=>p.classList.remove("on"));
+  $("#p-"+m).classList.add("on");
+  clearInputs();
+  if(m==="voice"&&!SR){ $("#voice-read").textContent="この きかいでは こえが つかえないみたい"; }
+}
+$$(".mode").forEach(b=>b.onclick=()=>{AudioSys.play("tap");stopRec();inputModeSet(b.dataset.mode);});
+
+function clearInputs(){
+  keyBuf="";$("#key-box").textContent="";
+  if(padT){padT.clear();padO.clear();}
+  writeNum=null;
+  $("#write-read").textContent="すうじを かいてね";
+  $("#write-ok").disabled=true;
+  if(SR)$("#voice-read").textContent="こたえを こえで いってね";
+}
+
+/* --- キー --- */
+(function buildKeypad(){
+  const kp=$("#keypad");
+  const keys=["1","2","3","4","5","6","7","8","9","del","0","ok"];
+  keys.forEach(k=>{
+    const b=document.createElement("button");
+    b.className="btn"+(k==="ok"?" act":k==="del"?" del":"");
+    b.textContent=k==="del"?"けす":k==="ok"?"こたえる":k;
+    b.onclick=()=>{
+      AudioSys.play("tap");
+      if(k==="del"){keyBuf=keyBuf.slice(0,-1);}
+      else if(k==="ok"){ if(keyBuf==="")return; submit(parseInt(keyBuf,10)); return; }
+      else { if(keyBuf.length<2)keyBuf+=k; }
+      $("#key-box").textContent=keyBuf;
+    };
+    kp.appendChild(b);
+  });
+})();
+
+/* --- てがき --- */
+function readWrite(){
+  const t=padT.isEmpty()?null:Recog.recognize(padT.canvas);
+  const o=padO.isEmpty()?null:Recog.recognize(padO.canvas);
+  if(!o&&!t){ writeNum=null;$("#write-read").textContent="すうじを かいてね";$("#write-ok").disabled=true;return; }
+  let n;
+  if(t&&o)n=t.digit*10+o.digit;
+  else if(o)n=o.digit;
+  else n=t.digit; // じゅうのくらい だけ かいた ばあい
+  writeNum=n;
+  $("#write-read").innerHTML='これで いい？　<b>'+n+'</b>';
+  $("#write-ok").disabled=false;
+  AudioSys.play("tap",.6);
+}
+$("#write-clear").onclick=()=>{AudioSys.play("tap");clearInputs();};
+$("#write-ok").onclick=()=>{ if(writeNum===null)return; AudioSys.play("tap"); submit(writeNum); };
+
+/* --- こえ --- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition||null;
+let rec=null,recing=false;
+function startRec(){
+  if(!SR){$("#voice-read").textContent="この きかいでは こえが つかえないみたい";return;}
+  if(recing)return;
+  try{
+    rec=new SR();rec.lang="ja-JP";rec.interimResults=true;rec.maxAlternatives=3;rec.continuous=false;
+    rec.onstart=()=>{recing=true;$("#mic-btn").classList.add("rec");$("#mic-label").textContent="きいてるよ";$("#voice-read").textContent="…";};
+    rec.onresult=e=>{
+      let best=null,txt="";
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const r=e.results[i];
+        for(let j=0;j<r.length;j++){
+          const v=extractAnswer(r[j].transcript);
+          if(v!==null&&best===null)best=v;
+          if(j===0)txt=r[j].transcript;
+        }
+      }
+      $("#voice-read").innerHTML=txt?('「'+txt+'」'+(best!==null?'　<b>'+best+'</b>':'')):"…";
+      const last=e.results[e.results.length-1];
+      if(last&&last.isFinal){
+        stopRec();
+        if(best!==null)setTimeout(()=>submit(best),200);
+        else $("#voice-read").textContent="もういちど いってみて";
+      }
+    };
+    rec.onerror=ev=>{
+      recing=false;$("#mic-btn").classList.remove("rec");$("#mic-label").textContent="おして はなす";
+      if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){
+        $("#voice-read").textContent="マイクが つかえないよ。キーで こたえよう";
+        inputModeSet("key");toast("マイクの きょかが ないので キーに かえたよ");
+      }else if(ev.error==="no-speech"){ $("#voice-read").textContent="きこえなかった。もういちど おしてね"; }
+    };
+    rec.onend=()=>{recing=false;$("#mic-btn").classList.remove("rec");$("#mic-label").textContent="おして はなす";};
+    rec.start();
+  }catch(e){ $("#voice-read").textContent="マイクが つかえないよ。キーで こたえよう"; }
+}
+function stopRec(){ try{ if(rec&&recing)rec.stop(); }catch(e){} }
+$("#mic-btn").onclick=()=>{ AudioSys.play("tap"); if(recing)stopRec(); else startRec(); };
+
+/* =========================================================
+   がめん いどう
+   ========================================================= */
+$$("[data-back]").forEach(b=>b.onclick=()=>{
+  AudioSys.play("tap");Speech.stop();stopRec();judgeHide();
+  const to=b.dataset.back;
+  if(to==="s-home"){renderHome();}
+  show(to);
+});
+$("#btn-map").onclick=()=>{AudioSys.play("tap");renderMap();show("s-map");};
+$("#btn-play").onclick=()=>{
+  AudioSys.play("tap");
+  const next=DAN_ORDER.find(d=>bloomCount(d)<9&&danUnlocked(d))||DAN_ORDER[0];
+  startSession(next);
+};
+$("#btn-mix").onclick=()=>{ AudioSys.play("tap"); if(S.cleared.length<2){toast("2つの だんを クリアすると あそべるよ");return;} startSession("mix"); };
+$("#btn-start").onclick=async()=>{
+  AudioSys.ensure();AudioSys.def();AudioSys.play("pick");
+  Speech.say("くくファームへ ようこそ",1);
+  renderHome();show("s-home");
+};
+
+/* =========================================================
+   きどう
+   ========================================================= */
+(async function init(){
+  const saved=await Store.load();
+  if(saved)S=Object.assign(S,saved);
+  padT=setupPad($("#cv-t"),readWrite);
+  padO=setupPad($("#cv-o"),readWrite);
+  renderHome();
+  // テンプレートは あとから しずかに つくる
+  setTimeout(()=>{try{Recog.recognize($("#cv-o"));}catch(e){}},400);
+})();
+</script>
+</body>
+</html>
